@@ -1,7 +1,7 @@
 {
-  "version": 1,
+  "version": 2,
   "updatedAt": "2026-11-05",
-  "note": "Curated from npm keywords:dsh-plugin / community markets. Not affiliated with DeepSeek.",
+  "note": "Curated DSH community plugins. beginner = newbie must-install for daily efficiency. Not affiliated with DeepSeek.",
   "categories": [
     {
       "id": "featured",
@@ -12,6 +12,17 @@
       "description": {
         "zh": "社区热度高、安装量领先的常用插件",
         "en": "Popular community picks"
+      }
+    },
+    {
+      "id": "beginner",
+      "label": {
+        "zh": "新手必装",
+        "en": "Newbie Essentials"
+      },
+      "description": {
+        "zh": "上手 DSH 建议先装：找插件、中英对话、搜索、费用与上下文管理",
+        "en": "Install first: market, language, search, cost and context tools"
       }
     },
     {
@@ -388,17 +399,19 @@
       "spec": "dsh-context",
       "source": "npm",
       "title": "dsh-context",
-      "description": "上下文洞察与管理：仪表盘式查看和管理会话上下文。",
+      "description": "上下文洞察仪表盘：看清上下文由什么组成、如何优化。",
       "url": "https://www.npmjs.com/package/dsh-context",
       "categories": [
         "featured",
-        "memory"
+        "memory",
+        "beginner"
       ],
       "tags": [
-        "上下文"
+        "上下文",
+        "新手"
       ],
       "featured": true,
-      "rank": 86,
+      "rank": 96,
       "related": [
         "meow-memory",
         "dsh-prime-memory"
@@ -409,16 +422,18 @@
       "spec": "meow-memory",
       "source": "npm",
       "title": "meow-memory",
-      "description": "跨会话项目记忆：七层 SQLite 记忆与首轮快照注入。",
+      "description": "跨会话项目记忆（SQLite 多层）。长期用 DSH 做项目时很有用。",
       "url": "https://www.npmjs.com/package/meow-memory",
       "categories": [
-        "memory"
+        "memory",
+        "beginner"
       ],
       "tags": [
-        "记忆"
+        "记忆",
+        "新手"
       ],
       "featured": true,
-      "rank": 80,
+      "rank": 88,
       "related": [
         "dsh-prime-memory"
       ]
@@ -505,17 +520,19 @@
       "spec": "dsh-cost-meter",
       "source": "npm",
       "title": "dsh-cost-meter",
-      "description": "会话费用统计：本会话 / 当日 / 历史，内置 170+ 模型价格目录。",
+      "description": "会话费用与额度统计。新手必看，避免 Coding Plan / API 费用失控。",
       "url": "https://www.npmjs.com/package/dsh-cost-meter",
       "categories": [
         "featured",
-        "productivity"
+        "productivity",
+        "beginner"
       ],
       "tags": [
-        "费用"
+        "费用",
+        "新手"
       ],
       "featured": true,
-      "rank": 91,
+      "rank": 97,
       "related": [
         "dsh-token-diet"
       ]
@@ -525,17 +542,19 @@
       "spec": "dsh-free-search",
       "source": "npm",
       "title": "dsh-free-search",
-      "description": "免费网页搜索：Bing / DuckDuckGo / SearXNG 等 27 引擎。",
+      "description": "免费网页搜索（多引擎）。Agent 查资料、核对事实的基础能力。",
       "url": "https://www.npmjs.com/package/dsh-free-search",
       "categories": [
         "featured",
-        "productivity"
+        "productivity",
+        "beginner"
       ],
       "tags": [
-        "搜索"
+        "搜索",
+        "新手"
       ],
       "featured": true,
-      "rank": 89,
+      "rank": 98,
       "related": [
         "@liustack/modsearch"
       ]
@@ -564,17 +583,20 @@
       "spec": "@michengai/dsh-skills-manager",
       "source": "npm",
       "title": "@michengai/dsh-skills-manager",
-      "description": "统一加载并安全管理本机 Agent Skills。",
+      "description": "统一加载与安全管理本机 Agent Skills。扩展能力的入口。",
       "url": "https://www.npmjs.com/package/@michengai/dsh-skills-manager",
       "categories": [
         "productivity",
-        "agent"
+        "agent",
+        "beginner",
+        "featured"
       ],
       "tags": [
-        "skills"
+        "skills",
+        "新手"
       ],
       "featured": true,
-      "rank": 84,
+      "rank": 95,
       "related": [
         "@michengai/dsh-automation"
       ]
@@ -623,16 +645,18 @@
       "spec": "dsh-rewind-plugin",
       "source": "npm",
       "title": "dsh-rewind-plugin",
-      "description": "同窗口对话回退，并可还原工作区文件。",
+      "description": "同窗口对话回退并可还原工作区文件。试错友好，新手强烈建议。",
       "url": "https://www.npmjs.com/package/dsh-rewind-plugin",
       "categories": [
-        "productivity"
+        "productivity",
+        "beginner"
       ],
       "tags": [
-        "回退"
+        "回退",
+        "新手"
       ],
-      "featured": false,
-      "rank": 65,
+      "featured": true,
+      "rank": 94,
       "related": []
     },
     {
@@ -640,16 +664,18 @@
       "spec": "dsh-ops",
       "source": "npm",
       "title": "dsh-ops",
-      "description": "原生文件与 PTC 工具（Windows / Linux / macOS）。",
+      "description": "原生文件与 PTC 工具（Win/Linux/macOS）。本地改代码、跑命令更稳。",
       "url": "https://www.npmjs.com/package/dsh-ops",
       "categories": [
-        "productivity"
+        "productivity",
+        "beginner"
       ],
       "tags": [
-        "文件"
+        "文件",
+        "新手"
       ],
-      "featured": false,
-      "rank": 63,
+      "featured": true,
+      "rank": 93,
       "related": [
         "dsh-remote"
       ]
@@ -851,20 +877,22 @@
       "spec": "dshmarket",
       "source": "npm",
       "title": "dshmarket",
-      "description": "可视化插件市场：浏览、搜索、一键安装社区插件。",
+      "description": "可视化插件市场：逛一逛点一下装好。新手找社区插件的第一入口。",
       "url": "https://www.npmjs.com/package/dshmarket",
       "categories": [
         "featured",
-        "marketplace"
+        "marketplace",
+        "beginner"
       ],
       "tags": [
-        "市场"
+        "市场",
+        "新手"
       ],
       "featured": true,
-      "rank": 94,
+      "rank": 100,
       "related": [
-        "dsh-plugin",
-        "dsh-m"
+        "dsh-plugin-discovery",
+        "dsh-plugin"
       ]
     },
     {
@@ -1133,19 +1161,46 @@
       "spec": "dsh-plugin-discovery",
       "source": "npm",
       "title": "dsh-plugin-discovery",
-      "description": "本插件：侧栏发现 / 推荐 / 分类 / 安装社区 DSH Bundle。",
+      "description": "侧栏发现 / 推荐 / 分类 / 安装社区 Bundle（本插件）。",
       "url": "https://www.npmjs.com/package/dsh-plugin-discovery",
       "categories": [
-        "marketplace"
+        "marketplace",
+        "beginner"
       ],
       "tags": [
-        "发现"
+        "发现",
+        "新手"
       ],
       "featured": false,
-      "rank": 50,
+      "rank": 92,
       "related": [
         "dshmarket"
       ]
+    },
+    {
+      "id": "dingpenghui-conversation-language",
+      "spec": "@dingpenghui/dsh-conversation-language",
+      "source": "npm",
+      "title": "@dingpenghui/dsh-conversation-language",
+      "url": "https://www.npmjs.com/package/@dingpenghui/dsh-conversation-language",
+      "categories": [
+        "beginner",
+        "productivity",
+        "featured"
+      ],
+      "tags": [
+        "语言",
+        "中英",
+        "会话",
+        "新手"
+      ],
+      "featured": true,
+      "rank": 99,
+      "related": [
+        "dsh-soul-md",
+        "dsh-context"
+      ],
+      "description": "对话语言切换（中/英）：动态更新 Persona，切换后 AI 用对应语言思考与回复，工具描述也一致。"
     }
   ]
 }

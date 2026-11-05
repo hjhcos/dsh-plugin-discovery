@@ -722,7 +722,7 @@ window.__ModuleLoader__.load({
 				return /[\u4e00-\u9fff]/.test(sample) ? "zh" : "en";
 			}, [t]);
 			const [browseMode, setBrowseMode] = React.useState("recommend");
-			const [category, setCategory] = React.useState("featured");
+			const [category, setCategory] = React.useState("beginner");
 			const [categories, setCategories] = React.useState([]);
 			const [catalogInfo, setCatalogInfo] = React.useState({ version: 0, origin: "bundled" });
 			const [query, setQuery] = React.useState(DEFAULT_QUERY);
