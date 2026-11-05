@@ -27,19 +27,43 @@ DeepSeek Harness（DSH）本身能力很强，但社区 Bundle 分散在 GitHub�
 
 ## 一分钟安装
 
-在 DSH「插件」页安装：
+打开 DSH →「插件」页，在安装输入框填下面任一方式，安装并启用后刷新 Web，侧栏会出现「发现插件」。
+
+### 国内推荐（优先）
+
+1. **npm 包名（最省事）**——多数国内环境已配淘宝 / npmmirror 镜像，直接装：
 
 ```text
 dsh-plugin-discovery
 ```
 
-或：
+若刚发布不久镜像尚未同步，可稍等几分钟，或临时切官方源后再装。
+
+2. **Gitee 仓库（GitHub 访问慢时首选）**——粘贴完整地址即可：
+
+```text
+https://gitee.com/hjhcos/dsh-plugin-discovery
+```
+
+也可写成：
+
+```text
+git+https://gitee.com/hjhcos/dsh-plugin-discovery.git
+```
+
+### 国际 / 备用
 
 ```text
 github:hjhcos/dsh-plugin-discovery
 ```
 
-启用后刷新页面，侧栏会出现「发现插件」。
+或 npm 官方页：https://www.npmjs.com/package/dsh-plugin-discovery
+
+### 国内安装小提示
+
+- 网络不稳定时优先 **Gitee 链接**，不要死磕 GitHub。
+- 装完若侧栏没有「发现插件」：到「插件」页确认已启用，再强制刷新浏览器。
+- 本插件搜索社区包仍会访问 GitHub / npm；仅「装本插件本身」建议走国内通道。
 
 ## 使用建议
 

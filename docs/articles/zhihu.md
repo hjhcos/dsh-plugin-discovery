@@ -29,17 +29,31 @@ DeepSeek Harness（DSH）的插件生态在长，但入口偏「你得先知道�
 - 安装过程不透明：未安装 / 安装中 / 已安装三态
 - 刷新后不知道装没装完：用 requestId 继续跟踪
 
-## 怎么装
+## 怎么装（国内读者看这里）
 
-在 DSH 插件页输入：
+打开 DSH「插件」页，按网络情况选一种：
+
+**最省事（国内镜像一般可用）**
+
+直接输入包名：
 
 `dsh-plugin-discovery`
 
+**GitHub 打不开 / 很慢时**
+
+改用 Gitee 完整地址：
+
+`https://gitee.com/hjhcos/dsh-plugin-discovery`
+
 或：
+
+`git+https://gitee.com/hjhcos/dsh-plugin-discovery.git`
+
+**备用**
 
 `github:hjhcos/dsh-plugin-discovery`
 
-装好启用，刷新 Web，侧栏就能看到「发现插件」。
+装好并启用后刷新 Web，侧栏就会出现「发现插件」。若 npm 镜像还没同步到新包，等几分钟或直接用 Gitee 链接。
 
 ## 开源地址
 

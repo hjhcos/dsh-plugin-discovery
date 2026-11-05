@@ -20,19 +20,31 @@
 
 ## 安装
 
-在 DSH 的「插件」页安装以下任一形式：
+在 DSH 的「插件」页安装以下任一形式。
+
+### 国内推荐
+
+npm 包名（多数环境已使用 npmmirror / 淘宝镜像）：
 
 ```text
 dsh-plugin-discovery
 ```
 
-或：
+GitHub 访问慢时，优先用 Gitee：
+
+```text
+https://gitee.com/hjhcos/dsh-plugin-discovery
+```
+
+```text
+git+https://gitee.com/hjhcos/dsh-plugin-discovery.git
+```
+
+### 备用
 
 ```text
 npm:dsh-plugin-discovery
 ```
-
-或 GitHub：
 
 ```text
 github:hjhcos/dsh-plugin-discovery

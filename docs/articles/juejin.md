@@ -30,17 +30,33 @@
 2. **安装态可观察**：未安装 / 安装中 / 已安装；刷新页面也能用 `requestId` 继续跟踪。
 3. **精确匹配包名**：避免 `dsh-pet` 与 `@scope/dsh-pet` 这类短名串线。
 
-## 安装
+## 安装（含国内方式）
+
+打开 DSH「插件」页，任选一种安装源：
+
+**国内推荐 ① npm 包名**（走淘宝 / npmmirror 镜像即可）：
 
 ```text
 dsh-plugin-discovery
 ```
 
-或 GitHub：
+**国内推荐 ② Gitee**（GitHub 慢或不稳定时用）：
+
+```text
+https://gitee.com/hjhcos/dsh-plugin-discovery
+```
+
+```text
+git+https://gitee.com/hjhcos/dsh-plugin-discovery.git
+```
+
+**备用 GitHub：**
 
 ```text
 github:hjhcos/dsh-plugin-discovery
 ```
+
+装完启用 → 刷新页面 → 侧栏出现「发现插件」。镜像若暂时搜不到包，等同步或改用 Gitee 链接。
 
 ## 链接
 
