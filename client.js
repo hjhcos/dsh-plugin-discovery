@@ -1183,9 +1183,10 @@ window.__ModuleLoader__.load({
 				{ value: "search", label: t("browseSearch") },
 			];
 			const categoryChips = [
+				{ id: "beginner", label: categoryLabel(categories.find((c) => c.id === "beginner"), lang) || (lang === "en" ? "Newbie Essentials" : "新手必装") },
 				{ id: "featured", label: t("categoryAll") },
 				...categories
-					.filter((cat) => cat && cat.id && cat.id !== "featured")
+					.filter((cat) => cat && cat.id && cat.id !== "featured" && cat.id !== "beginner")
 					.map((cat) => ({ id: cat.id, label: categoryLabel(cat, lang) })),
 			];
 			const browseCardTitle =
