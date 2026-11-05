@@ -1,0 +1,1151 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-05",
+  "note": "Curated from npm keywords:dsh-plugin / community markets. Not affiliated with DeepSeek.",
+  "categories": [
+    {
+      "id": "featured",
+      "label": {
+        "zh": "精选推荐",
+        "en": "Featured"
+      },
+      "description": {
+        "zh": "社区热度高、安装量领先的常用插件",
+        "en": "Popular community picks"
+      }
+    },
+    {
+      "id": "pet",
+      "label": {
+        "zh": "桌宠挂件",
+        "en": "Pets & Widgets"
+      },
+      "description": {
+        "zh": "桌面宠物、余额气泡、表情贴纸",
+        "en": "Desktop pets, balance widgets, stickers"
+      }
+    },
+    {
+      "id": "theme",
+      "label": {
+        "zh": "主题皮肤",
+        "en": "Themes & Skins"
+      },
+      "description": {
+        "zh": "换肤、壁纸、视觉风格",
+        "en": "Skins, wallpapers, visual themes"
+      }
+    },
+    {
+      "id": "im",
+      "label": {
+        "zh": "即时通讯",
+        "en": "Messaging"
+      },
+      "description": {
+        "zh": "QQ / Telegram / 飞书等多端接入",
+        "en": "QQ, Telegram, Feishu and more"
+      }
+    },
+    {
+      "id": "memory",
+      "label": {
+        "zh": "记忆上下文",
+        "en": "Memory & Context"
+      },
+      "description": {
+        "zh": "长期记忆、上下文洞察、人设",
+        "en": "Long-term memory, context, persona"
+      }
+    },
+    {
+      "id": "productivity",
+      "label": {
+        "zh": "效率工具",
+        "en": "Productivity"
+      },
+      "description": {
+        "zh": "费用统计、搜索、自动化、任务板",
+        "en": "Cost, search, automation, boards"
+      }
+    },
+    {
+      "id": "media",
+      "label": {
+        "zh": "多媒体生成",
+        "en": "Media"
+      },
+      "description": {
+        "zh": "图像生成、办公预览、GenUI",
+        "en": "Image gen, office, GenUI"
+      }
+    },
+    {
+      "id": "remote",
+      "label": {
+        "zh": "远程与移动",
+        "en": "Remote & Mobile"
+      },
+      "description": {
+        "zh": "SSH、远程桌面、移动端适配",
+        "en": "SSH, remote access, mobile"
+      }
+    },
+    {
+      "id": "marketplace",
+      "label": {
+        "zh": "插件市场",
+        "en": "Marketplaces"
+      },
+      "description": {
+        "zh": "浏览/安装社区插件的聚合市场",
+        "en": "Plugin markets and catalogs"
+      }
+    },
+    {
+      "id": "agent",
+      "label": {
+        "zh": "多智能体",
+        "en": "Agents"
+      },
+      "description": {
+        "zh": "团队协作、会话超代理、技能管理",
+        "en": "Teams, superagents, skills"
+      }
+    }
+  ],
+  "plugins": [
+    {
+      "id": "dsh-pet",
+      "spec": "dsh-pet",
+      "source": "npm",
+      "title": "dsh-pet",
+      "description": "DeepSeek Harness 桌面宠物：百余透明动画，可上桌面、可多开。社区安装量最高的桌宠之一。",
+      "url": "https://www.npmjs.com/package/dsh-pet",
+      "categories": [
+        "featured",
+        "pet"
+      ],
+      "tags": [
+        "桌宠",
+        "pet"
+      ],
+      "featured": true,
+      "rank": 100,
+      "related": [
+        "@linxin666/dsh-pet",
+        "dsh-whale-widget",
+        "dsh-dafeiyu"
+      ]
+    },
+    {
+      "id": "linxin666-dsh-pet",
+      "spec": "@linxin666/dsh-pet",
+      "source": "npm",
+      "title": "@linxin666/dsh-pet",
+      "description": "注册表驱动多宠物伴侣：跟随模型活动、摸头喂食、支持 Live2D / 精灵图工坊。",
+      "url": "https://www.npmjs.com/package/@linxin666/dsh-pet",
+      "categories": [
+        "featured",
+        "pet"
+      ],
+      "tags": [
+        "桌宠",
+        "Live2D"
+      ],
+      "featured": true,
+      "rank": 95,
+      "related": [
+        "dsh-pet",
+        "@linxin666/dsh-web-all"
+      ]
+    },
+    {
+      "id": "dsh-whale-widget",
+      "spec": "dsh-whale-widget",
+      "source": "npm",
+      "title": "dsh-whale-widget",
+      "description": "右下角余额小鲸鱼：余额 / 今日已用 / 峰谷定价气泡与快捷编辑。",
+      "url": "https://www.npmjs.com/package/dsh-whale-widget",
+      "categories": [
+        "featured",
+        "pet"
+      ],
+      "tags": [
+        "余额",
+        "widget"
+      ],
+      "featured": true,
+      "rank": 90,
+      "related": [
+        "dsh-pet",
+        "dsh-cost-meter"
+      ]
+    },
+    {
+      "id": "dsh-dream-skin",
+      "spec": "dsh-dream-skin",
+      "source": "npm",
+      "title": "dsh-dream-skin",
+      "description": "8 套 iOS / Linear 式清透主题 + 弥散光壁纸与强调色。",
+      "url": "https://www.npmjs.com/package/dsh-dream-skin",
+      "categories": [
+        "featured",
+        "theme"
+      ],
+      "tags": [
+        "皮肤",
+        "主题"
+      ],
+      "featured": true,
+      "rank": 88,
+      "related": [
+        "dsh-claude-style",
+        "dsh-folia"
+      ]
+    },
+    {
+      "id": "dsh-claude-style",
+      "spec": "dsh-claude-style",
+      "source": "npm",
+      "title": "dsh-claude-style",
+      "description": "Claude Code Desktop 风格主题，重做 Web GUI 视觉与交互。",
+      "url": "https://www.npmjs.com/package/dsh-claude-style",
+      "categories": [
+        "theme"
+      ],
+      "tags": [
+        "Claude",
+        "主题"
+      ],
+      "featured": false,
+      "rank": 72,
+      "related": [
+        "dsh-dream-skin"
+      ]
+    },
+    {
+      "id": "dsh-folia",
+      "spec": "dsh-folia",
+      "source": "npm",
+      "title": "dsh-folia",
+      "description": "Folia 壁纸引擎：把本机 Wallpaper Engine 壁纸搬进 DSH。",
+      "url": "https://www.npmjs.com/package/dsh-folia",
+      "categories": [
+        "theme",
+        "media"
+      ],
+      "tags": [
+        "壁纸"
+      ],
+      "featured": true,
+      "rank": 82,
+      "related": [
+        "dsh-plugin-wallpaper-engine",
+        "dsh-video-skin"
+      ]
+    },
+    {
+      "id": "dsh-plugin-wallpaper-engine",
+      "spec": "dsh-plugin-wallpaper-engine",
+      "source": "npm",
+      "title": "dsh-plugin-wallpaper-engine",
+      "description": "在 Web GUI 后台渲染本机 Wallpaper Engine 壁纸。",
+      "url": "https://www.npmjs.com/package/dsh-plugin-wallpaper-engine",
+      "categories": [
+        "theme"
+      ],
+      "tags": [
+        "壁纸"
+      ],
+      "featured": false,
+      "rank": 68,
+      "related": [
+        "dsh-folia"
+      ]
+    },
+    {
+      "id": "dsh-video-skin",
+      "spec": "dsh-video-skin",
+      "source": "npm",
+      "title": "dsh-video-skin",
+      "description": "视频皮肤：短片循环聊天背景 + 有声开机动画。",
+      "url": "https://www.npmjs.com/package/dsh-video-skin",
+      "categories": [
+        "theme"
+      ],
+      "tags": [
+        "视频",
+        "皮肤"
+      ],
+      "featured": false,
+      "rank": 55,
+      "related": [
+        "dsh-dream-skin"
+      ]
+    },
+    {
+      "id": "xmanrui-dsh-im",
+      "spec": "@xmanrui/dsh-im",
+      "source": "npm",
+      "title": "@xmanrui/dsh-im",
+      "description": "微信 / 飞书 / 企微 / 钉钉 / QQ / Telegram / Slack / Discord 等 IM 统一接入。",
+      "url": "https://www.npmjs.com/package/@xmanrui/dsh-im",
+      "categories": [
+        "featured",
+        "im"
+      ],
+      "tags": [
+        "IM",
+        "微信"
+      ],
+      "featured": true,
+      "rank": 92,
+      "related": [
+        "dsh-onebot-qq",
+        "dsh-tg-bridge"
+      ]
+    },
+    {
+      "id": "dsh-onebot-qq",
+      "spec": "dsh-onebot-qq",
+      "source": "npm",
+      "title": "dsh-onebot-qq",
+      "description": "OneBot 11 QQ 机器人通道，兼容 NapCat。",
+      "url": "https://www.npmjs.com/package/dsh-onebot-qq",
+      "categories": [
+        "im"
+      ],
+      "tags": [
+        "QQ",
+        "OneBot"
+      ],
+      "featured": false,
+      "rank": 78,
+      "related": [
+        "@tencent-connect/dsh-qqbot"
+      ]
+    },
+    {
+      "id": "tencent-dsh-qqbot",
+      "spec": "@tencent-connect/dsh-qqbot",
+      "source": "npm",
+      "title": "@tencent-connect/dsh-qqbot",
+      "description": "在 QQ 私聊和群聊里直接对话 DeepSeek Harness。",
+      "url": "https://www.npmjs.com/package/@tencent-connect/dsh-qqbot",
+      "categories": [
+        "im"
+      ],
+      "tags": [
+        "QQ"
+      ],
+      "featured": false,
+      "rank": 76,
+      "related": [
+        "dsh-onebot-qq"
+      ]
+    },
+    {
+      "id": "dsh-tg-bridge",
+      "spec": "dsh-tg-bridge",
+      "source": "npm",
+      "title": "dsh-tg-bridge",
+      "description": "从 Telegram 驱动 DSH：论坛主题对应项目 / 模型 / 会话。",
+      "url": "https://www.npmjs.com/package/dsh-tg-bridge",
+      "categories": [
+        "im"
+      ],
+      "tags": [
+        "Telegram"
+      ],
+      "featured": false,
+      "rank": 70,
+      "related": [
+        "@xmanrui/dsh-im"
+      ]
+    },
+    {
+      "id": "zaofan-dsh-qqbot",
+      "spec": "@zaofan/dsh-qqbot",
+      "source": "npm",
+      "title": "@zaofan/dsh-qqbot",
+      "description": "QQ Bot IM 通道插件。",
+      "url": "https://www.npmjs.com/package/@zaofan/dsh-qqbot",
+      "categories": [
+        "im"
+      ],
+      "tags": [
+        "QQ"
+      ],
+      "featured": false,
+      "rank": 64,
+      "related": [
+        "dsh-onebot-qq"
+      ]
+    },
+    {
+      "id": "dsh-context",
+      "spec": "dsh-context",
+      "source": "npm",
+      "title": "dsh-context",
+      "description": "上下文洞察与管理：仪表盘式查看和管理会话上下文。",
+      "url": "https://www.npmjs.com/package/dsh-context",
+      "categories": [
+        "featured",
+        "memory"
+      ],
+      "tags": [
+        "上下文"
+      ],
+      "featured": true,
+      "rank": 86,
+      "related": [
+        "meow-memory",
+        "dsh-prime-memory"
+      ]
+    },
+    {
+      "id": "meow-memory",
+      "spec": "meow-memory",
+      "source": "npm",
+      "title": "meow-memory",
+      "description": "跨会话项目记忆：七层 SQLite 记忆与首轮快照注入。",
+      "url": "https://www.npmjs.com/package/meow-memory",
+      "categories": [
+        "memory"
+      ],
+      "tags": [
+        "记忆"
+      ],
+      "featured": true,
+      "rank": 80,
+      "related": [
+        "dsh-prime-memory"
+      ]
+    },
+    {
+      "id": "dsh-prime-memory",
+      "spec": "dsh-prime-memory",
+      "source": "npm",
+      "title": "dsh-prime-memory",
+      "description": "L0~L3 分层蒸馏记忆：自动捕获、原子记忆、场景块与核心画像。",
+      "url": "https://www.npmjs.com/package/dsh-prime-memory",
+      "categories": [
+        "memory"
+      ],
+      "tags": [
+        "记忆"
+      ],
+      "featured": false,
+      "rank": 74,
+      "related": [
+        "meow-memory"
+      ]
+    },
+    {
+      "id": "furongjun-dsh-memory",
+      "spec": "@furongjun1999/dsh-memory",
+      "source": "npm",
+      "title": "@furongjun1999/dsh-memory",
+      "description": "灵枢：长期记忆 / 知识飞轮 / 自我认知 / 递归反思。",
+      "url": "https://www.npmjs.com/package/@furongjun1999/dsh-memory",
+      "categories": [
+        "memory"
+      ],
+      "tags": [
+        "记忆",
+        "灵枢"
+      ],
+      "featured": false,
+      "rank": 71,
+      "related": [
+        "dsh-soul-md"
+      ]
+    },
+    {
+      "id": "dsh-soul-md",
+      "spec": "dsh-soul-md",
+      "source": "npm",
+      "title": "dsh-soul-md",
+      "description": "soul.md 风格人设 + 长期记忆，按工作区 / 会话切换人设卡。",
+      "url": "https://www.npmjs.com/package/dsh-soul-md",
+      "categories": [
+        "memory"
+      ],
+      "tags": [
+        "人设"
+      ],
+      "featured": false,
+      "rank": 69,
+      "related": [
+        "@openviking/dsh-memory-plugin"
+      ]
+    },
+    {
+      "id": "openviking-memory",
+      "spec": "@openviking/dsh-memory-plugin",
+      "source": "npm",
+      "title": "@openviking/dsh-memory-plugin",
+      "description": "OpenViking 记忆与上下文 Bundle。",
+      "url": "https://www.npmjs.com/package/@openviking/dsh-memory-plugin",
+      "categories": [
+        "memory"
+      ],
+      "tags": [
+        "记忆"
+      ],
+      "featured": false,
+      "rank": 60,
+      "related": [
+        "meow-memory"
+      ]
+    },
+    {
+      "id": "dsh-cost-meter",
+      "spec": "dsh-cost-meter",
+      "source": "npm",
+      "title": "dsh-cost-meter",
+      "description": "会话费用统计：本会话 / 当日 / 历史，内置 170+ 模型价格目录。",
+      "url": "https://www.npmjs.com/package/dsh-cost-meter",
+      "categories": [
+        "featured",
+        "productivity"
+      ],
+      "tags": [
+        "费用"
+      ],
+      "featured": true,
+      "rank": 91,
+      "related": [
+        "dsh-token-diet"
+      ]
+    },
+    {
+      "id": "dsh-free-search",
+      "spec": "dsh-free-search",
+      "source": "npm",
+      "title": "dsh-free-search",
+      "description": "免费网页搜索：Bing / DuckDuckGo / SearXNG 等 27 引擎。",
+      "url": "https://www.npmjs.com/package/dsh-free-search",
+      "categories": [
+        "featured",
+        "productivity"
+      ],
+      "tags": [
+        "搜索"
+      ],
+      "featured": true,
+      "rank": 89,
+      "related": [
+        "@liustack/modsearch"
+      ]
+    },
+    {
+      "id": "dsh-token-diet",
+      "spec": "dsh-token-diet",
+      "source": "npm",
+      "title": "dsh-token-diet",
+      "description": "Token 统计与按会话预算，预算耗尽时停止任务。",
+      "url": "https://www.npmjs.com/package/dsh-token-diet",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "token"
+      ],
+      "featured": false,
+      "rank": 66,
+      "related": [
+        "dsh-cost-meter"
+      ]
+    },
+    {
+      "id": "michengai-skills",
+      "spec": "@michengai/dsh-skills-manager",
+      "source": "npm",
+      "title": "@michengai/dsh-skills-manager",
+      "description": "统一加载并安全管理本机 Agent Skills。",
+      "url": "https://www.npmjs.com/package/@michengai/dsh-skills-manager",
+      "categories": [
+        "productivity",
+        "agent"
+      ],
+      "tags": [
+        "skills"
+      ],
+      "featured": true,
+      "rank": 84,
+      "related": [
+        "@michengai/dsh-automation"
+      ]
+    },
+    {
+      "id": "michengai-automation",
+      "spec": "@michengai/dsh-automation",
+      "source": "npm",
+      "title": "@michengai/dsh-automation",
+      "description": "在独立 Session 中按计划执行和管理编码任务。",
+      "url": "https://www.npmjs.com/package/@michengai/dsh-automation",
+      "categories": [
+        "productivity",
+        "agent"
+      ],
+      "tags": [
+        "自动化"
+      ],
+      "featured": false,
+      "rank": 73,
+      "related": [
+        "@michengai/dsh-archive-manager"
+      ]
+    },
+    {
+      "id": "michengai-archive",
+      "spec": "@michengai/dsh-archive-manager",
+      "source": "npm",
+      "title": "@michengai/dsh-archive-manager",
+      "description": "归档、恢复、收藏和永久删除会话。",
+      "url": "https://www.npmjs.com/package/@michengai/dsh-archive-manager",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "归档"
+      ],
+      "featured": false,
+      "rank": 67,
+      "related": [
+        "dsh-rewind-plugin"
+      ]
+    },
+    {
+      "id": "dsh-rewind-plugin",
+      "spec": "dsh-rewind-plugin",
+      "source": "npm",
+      "title": "dsh-rewind-plugin",
+      "description": "同窗口对话回退，并可还原工作区文件。",
+      "url": "https://www.npmjs.com/package/dsh-rewind-plugin",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "回退"
+      ],
+      "featured": false,
+      "rank": 65,
+      "related": []
+    },
+    {
+      "id": "dsh-ops",
+      "spec": "dsh-ops",
+      "source": "npm",
+      "title": "dsh-ops",
+      "description": "原生文件与 PTC 工具（Windows / Linux / macOS）。",
+      "url": "https://www.npmjs.com/package/dsh-ops",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "文件"
+      ],
+      "featured": false,
+      "rank": 63,
+      "related": [
+        "dsh-remote"
+      ]
+    },
+    {
+      "id": "dsh-image-gen",
+      "spec": "dsh-image-gen",
+      "source": "npm",
+      "title": "dsh-image-gen",
+      "description": "类 ChatGPT 图像生成：Gemini / OpenAI / Seedream / DashScope。",
+      "url": "https://www.npmjs.com/package/dsh-image-gen",
+      "categories": [
+        "featured",
+        "media"
+      ],
+      "tags": [
+        "图像"
+      ],
+      "featured": true,
+      "rank": 85,
+      "related": [
+        "dsh-genui"
+      ]
+    },
+    {
+      "id": "dsh-genui",
+      "spec": "dsh-genui",
+      "source": "npm",
+      "title": "dsh-genui",
+      "description": "对话内交互式图表、表单、计算器与迷你应用。",
+      "url": "https://www.npmjs.com/package/dsh-genui",
+      "categories": [
+        "media"
+      ],
+      "tags": [
+        "GenUI"
+      ],
+      "featured": false,
+      "rank": 75,
+      "related": [
+        "@changfenhuang/dsh-genui"
+      ]
+    },
+    {
+      "id": "changfenhuang-genui",
+      "spec": "@changfenhuang/dsh-genui",
+      "source": "npm",
+      "title": "@changfenhuang/dsh-genui",
+      "description": "助手消息内联渲染交互 UI 组件。",
+      "url": "https://www.npmjs.com/package/@changfenhuang/dsh-genui",
+      "categories": [
+        "media"
+      ],
+      "tags": [
+        "GenUI"
+      ],
+      "featured": false,
+      "rank": 70,
+      "related": [
+        "dsh-genui"
+      ]
+    },
+    {
+      "id": "dsh-univer-office",
+      "spec": "dsh-univer-office",
+      "source": "npm",
+      "title": "dsh-univer-office",
+      "description": "Univer 办公预览与协作 Gateway / Viewer。",
+      "url": "https://www.npmjs.com/package/dsh-univer-office",
+      "categories": [
+        "media"
+      ],
+      "tags": [
+        "办公"
+      ],
+      "featured": false,
+      "rank": 62,
+      "related": []
+    },
+    {
+      "id": "dsh-vision-router",
+      "spec": "dsh-vision-router",
+      "source": "npm",
+      "title": "dsh-vision-router",
+      "description": "给纯文本 Agent 加眼睛：内置免费视觉链路。",
+      "url": "https://www.npmjs.com/package/dsh-vision-router",
+      "categories": [
+        "media",
+        "productivity"
+      ],
+      "tags": [
+        "视觉"
+      ],
+      "featured": false,
+      "rank": 68,
+      "related": [
+        "dsh-image-gen"
+      ]
+    },
+    {
+      "id": "dsh-remote",
+      "spec": "dsh-remote",
+      "source": "npm",
+      "title": "dsh-remote",
+      "description": "远程工作助手：SSH 等多方式连接。",
+      "url": "https://www.npmjs.com/package/dsh-remote",
+      "categories": [
+        "featured",
+        "remote"
+      ],
+      "tags": [
+        "SSH"
+      ],
+      "featured": true,
+      "rank": 83,
+      "related": [
+        "@linxin666/dsh-ssh",
+        "dsh-mobile"
+      ]
+    },
+    {
+      "id": "linxin666-ssh",
+      "spec": "@linxin666/dsh-ssh",
+      "source": "npm",
+      "title": "@linxin666/dsh-ssh",
+      "description": "Web GUI 远程 SSH：主机配置存储与 ~/.ssh 导入。",
+      "url": "https://www.npmjs.com/package/@linxin666/dsh-ssh",
+      "categories": [
+        "remote"
+      ],
+      "tags": [
+        "SSH"
+      ],
+      "featured": false,
+      "rank": 66,
+      "related": [
+        "dsh-remote"
+      ]
+    },
+    {
+      "id": "dsh-mobile",
+      "spec": "dsh-mobile",
+      "source": "npm",
+      "title": "dsh-mobile",
+      "description": "移动端适配与安全访问：局域网、远程、Android App。",
+      "url": "https://www.npmjs.com/package/dsh-mobile",
+      "categories": [
+        "remote"
+      ],
+      "tags": [
+        "移动端"
+      ],
+      "featured": true,
+      "rank": 79,
+      "related": [
+        "dsh-mobile-plugin"
+      ]
+    },
+    {
+      "id": "dsh-mobile-plugin",
+      "spec": "dsh-mobile-plugin",
+      "source": "npm",
+      "title": "dsh-mobile-plugin",
+      "description": "移动端 API 与中继客户端。",
+      "url": "https://www.npmjs.com/package/dsh-mobile-plugin",
+      "categories": [
+        "remote"
+      ],
+      "tags": [
+        "mobile"
+      ],
+      "featured": false,
+      "rank": 61,
+      "related": [
+        "dsh-mobile"
+      ]
+    },
+    {
+      "id": "linxin666-remote-web",
+      "spec": "@linxin666/dsh-remote-web-ui",
+      "source": "npm",
+      "title": "@linxin666/dsh-remote-web-ui",
+      "description": "扫码配对远程访问，与官方界面共用同一套 UI。",
+      "url": "https://www.npmjs.com/package/@linxin666/dsh-remote-web-ui",
+      "categories": [
+        "remote"
+      ],
+      "tags": [
+        "远程"
+      ],
+      "featured": false,
+      "rank": 70,
+      "related": [
+        "dsh-mobile"
+      ]
+    },
+    {
+      "id": "dshmarket",
+      "spec": "dshmarket",
+      "source": "npm",
+      "title": "dshmarket",
+      "description": "可视化插件市场：浏览、搜索、一键安装社区插件。",
+      "url": "https://www.npmjs.com/package/dshmarket",
+      "categories": [
+        "featured",
+        "marketplace"
+      ],
+      "tags": [
+        "市场"
+      ],
+      "featured": true,
+      "rank": 94,
+      "related": [
+        "dsh-plugin",
+        "dsh-m"
+      ]
+    },
+    {
+      "id": "dsh-plugin",
+      "spec": "dsh-plugin",
+      "source": "npm",
+      "title": "dsh-plugin",
+      "description": "社区插件市场，按官方插件规范浏览与安装。",
+      "url": "https://www.npmjs.com/package/dsh-plugin",
+      "categories": [
+        "marketplace"
+      ],
+      "tags": [
+        "市场"
+      ],
+      "featured": false,
+      "rank": 77,
+      "related": [
+        "dshmarket"
+      ]
+    },
+    {
+      "id": "dsh-m",
+      "spec": "dsh-m",
+      "source": "npm",
+      "title": "dsh-m",
+      "description": "可自定义收录清单的插件市场，附 agent 工具与 CLI。",
+      "url": "https://www.npmjs.com/package/dsh-m",
+      "categories": [
+        "marketplace"
+      ],
+      "tags": [
+        "市场"
+      ],
+      "featured": false,
+      "rank": 65,
+      "related": [
+        "dshmarket"
+      ]
+    },
+    {
+      "id": "dsh-plugin-catalog",
+      "spec": "dsh-plugin-catalog",
+      "source": "npm",
+      "title": "dsh-plugin-catalog",
+      "description": "DeepSeek Harness 插件目录数据（数千条目索引）。",
+      "url": "https://www.npmjs.com/package/dsh-plugin-catalog",
+      "categories": [
+        "marketplace"
+      ],
+      "tags": [
+        "目录"
+      ],
+      "featured": false,
+      "rank": 58,
+      "related": []
+    },
+    {
+      "id": "nanmicoder-agent-teams",
+      "spec": "@nanmicoder/dsh-agent-teams",
+      "source": "npm",
+      "title": "@nanmicoder/dsh-agent-teams",
+      "description": "多智能体团队协作：captain / members / 依赖任务。",
+      "url": "https://www.npmjs.com/package/@nanmicoder/dsh-agent-teams",
+      "categories": [
+        "featured",
+        "agent"
+      ],
+      "tags": [
+        "多智能体"
+      ],
+      "featured": true,
+      "rank": 81,
+      "related": [
+        "dsh-session-superagent"
+      ]
+    },
+    {
+      "id": "dsh-session-superagent",
+      "spec": "dsh-session-superagent",
+      "source": "npm",
+      "title": "dsh-session-superagent",
+      "description": "会话级超代理：监视 GitHub 仓库并在事件时唤醒会话。",
+      "url": "https://www.npmjs.com/package/dsh-session-superagent",
+      "categories": [
+        "agent"
+      ],
+      "tags": [
+        "superagent"
+      ],
+      "featured": false,
+      "rank": 73,
+      "related": []
+    },
+    {
+      "id": "linxin666-agents",
+      "spec": "@linxin666/dsh-agents",
+      "source": "npm",
+      "title": "@linxin666/dsh-agents",
+      "description": "Agent 小队：可复用成员定义。",
+      "url": "https://www.npmjs.com/package/@linxin666/dsh-agents",
+      "categories": [
+        "agent"
+      ],
+      "tags": [
+        "agents"
+      ],
+      "featured": false,
+      "rank": 71,
+      "related": [
+        "@linxin666/dsh-web-all"
+      ]
+    },
+    {
+      "id": "linxin666-web-all",
+      "spec": "@linxin666/dsh-web-all",
+      "source": "npm",
+      "title": "@linxin666/dsh-web-all",
+      "description": "DSH Web UI 全家桶：任务板 / 桌宠 / 皮肤中心等一次装齐。",
+      "url": "https://www.npmjs.com/package/@linxin666/dsh-web-all",
+      "categories": [
+        "featured",
+        "marketplace"
+      ],
+      "tags": [
+        "全家桶"
+      ],
+      "featured": true,
+      "rank": 87,
+      "related": [
+        "@linxin666/dsh-pet"
+      ]
+    },
+    {
+      "id": "dsh-codex-subscription",
+      "spec": "dsh-codex-subscription",
+      "source": "npm",
+      "title": "dsh-codex-subscription",
+      "description": "使用 ChatGPT / Codex 订阅：OAuth、配额与安全重置。",
+      "url": "https://www.npmjs.com/package/dsh-codex-subscription",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "Codex"
+      ],
+      "featured": false,
+      "rank": 74,
+      "related": [
+        "dsh-cost-meter"
+      ]
+    },
+    {
+      "id": "dsh-computer-use-win",
+      "spec": "dsh-computer-use-win",
+      "source": "npm",
+      "title": "dsh-computer-use-win",
+      "description": "Windows Computer Use：MCP stdio + PowerShell UIA。",
+      "url": "https://www.npmjs.com/package/dsh-computer-use-win",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "Windows"
+      ],
+      "featured": false,
+      "rank": 59,
+      "related": [
+        "dsh-ops"
+      ]
+    },
+    {
+      "id": "dsh-tui",
+      "spec": "@deepseek-harness-tui/dsh-tui",
+      "source": "npm",
+      "title": "@deepseek-harness-tui/dsh-tui",
+      "description": "终端交互界面：管理 agents、sessions 与 tools。",
+      "url": "https://www.npmjs.com/package/@deepseek-harness-tui/dsh-tui",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "TUI"
+      ],
+      "featured": false,
+      "rank": 64,
+      "related": []
+    },
+    {
+      "id": "dsh-meme",
+      "spec": "dsh-meme",
+      "source": "npm",
+      "title": "dsh-meme",
+      "description": "表情包插件：输入框一键发图、情绪筛选、图库市场。",
+      "url": "https://www.npmjs.com/package/dsh-meme",
+      "categories": [
+        "pet",
+        "media"
+      ],
+      "tags": [
+        "表情包"
+      ],
+      "featured": false,
+      "rank": 57,
+      "related": [
+        "dsh-nekowhale-stickers"
+      ]
+    },
+    {
+      "id": "dsh-nekowhale-stickers",
+      "spec": "dsh-nekowhale-stickers",
+      "source": "npm",
+      "title": "dsh-nekowhale-stickers",
+      "description": "大肥鱼 / GPT娘 sticker 知识库与本地 meme 模板。",
+      "url": "https://www.npmjs.com/package/dsh-nekowhale-stickers",
+      "categories": [
+        "pet"
+      ],
+      "tags": [
+        "sticker"
+      ],
+      "featured": false,
+      "rank": 52,
+      "related": [
+        "dsh-meme"
+      ]
+    },
+    {
+      "id": "dsh-dafeiyu",
+      "spec": "dsh-dafeiyu",
+      "source": "npm",
+      "title": "dsh-dafeiyu",
+      "description": "桌面原生大肥鱼伴侣，跟随会话事件驱动。",
+      "url": "https://www.npmjs.com/package/dsh-dafeiyu",
+      "categories": [
+        "pet"
+      ],
+      "tags": [
+        "大肥鱼"
+      ],
+      "featured": false,
+      "rank": 56,
+      "related": [
+        "dsh-pet"
+      ]
+    },
+    {
+      "id": "dsh-bili-scroll",
+      "spec": "dsh-bili-scroll",
+      "source": "npm",
+      "title": "dsh-bili-scroll",
+      "description": "每天自动刷一轮 B 站：读字幕挑精华、写日报。",
+      "url": "https://www.npmjs.com/package/dsh-bili-scroll",
+      "categories": [
+        "productivity"
+      ],
+      "tags": [
+        "B站"
+      ],
+      "featured": false,
+      "rank": 54,
+      "related": []
+    },
+    {
+      "id": "dsh-plugin-discovery-self",
+      "spec": "dsh-plugin-discovery",
+      "source": "npm",
+      "title": "dsh-plugin-discovery",
+      "description": "本插件：侧栏发现 / 推荐 / 分类 / 安装社区 DSH Bundle。",
+      "url": "https://www.npmjs.com/package/dsh-plugin-discovery",
+      "categories": [
+        "marketplace"
+      ],
+      "tags": [
+        "发现"
+      ],
+      "featured": false,
+      "rank": 50,
+      "related": [
+        "dshmarket"
+      ]
+    }
+  ]
+}

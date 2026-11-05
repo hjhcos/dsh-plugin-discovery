@@ -1,8 +1,8 @@
 {
   "name": "dsh-plugin-discovery",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
-  "description": "Discover community DSH plugin bundles on GitHub/npm and install them from the DeepSeek Harness UI.",
+  "description": "Discover community DSH plugin bundles on GitHub/npm with curated recommendations and categories, installable from the DeepSeek Harness UI.",
   "author": "hjhcos",
   "license": "MIT",
   "keywords": [
@@ -34,6 +34,7 @@
     "client.js",
     "cordis.patch.yml",
     "icon.svg",
+    "data",
     "locale",
     "skill",
     "docs",

@@ -1,10 +1,219 @@
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import z from "@deepseek-ai/schemastery";
 import { Service } from "@deepseek-ai/cordis";
 import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
 import { defineTool } from "@deepseek-ai/dsh-tools";
 import { markRemoteMethod } from "./mark-remote.js";
 
-const USER_AGENT = "dsh-plugin-discovery/1.0";
+const USER_AGENT = "dsh-plugin-discovery/1.1";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const DEFAULT_CATALOG_GITEE_URL =
+	"https://gitee.com/hjhcos/dsh-plugin-discovery/raw/main/data/recommended.json";
+const DEFAULT_CATALOG_GITHUB_URL =
+	"https://raw.githubusercontent.com/hjhcos/dsh-plugin-discovery/main/data/recommended.json";
+
+function emptyCatalog(error) {
+	return {
+		version: 0,
+		updatedAt: "",
+		categories: [],
+		plugins: [],
+		origin: "none",
+		error: error ? String(error) : undefined,
+	};
+}
+
+function normalizeCatalog(data, origin = "bundled") {
+	if (!data || typeof data !== "object") return emptyCatalog("invalid catalog");
+	return {
+		version: Number(data.version) || 0,
+		updatedAt: data.updatedAt || "",
+		categories: Array.isArray(data.categories) ? data.categories : [],
+		plugins: Array.isArray(data.plugins) ? data.plugins : [],
+		origin,
+	};
+}
+
+function loadBundledCatalog() {
+	try {
+		const raw = readFileSync(join(__dirname, "data", "recommended.json"), "utf8");
+		return normalizeCatalog(JSON.parse(raw), "bundled");
+	} catch (error) {
+		return emptyCatalog(error?.message || error);
+	}
+}
+
+function resolveCatalogCachePath() {
+	const home = String(process.env.DSH_HOME || "").trim();
+	const base = home || join(__dirname, ".cache");
+	return join(base, "cache", "dsh-plugin-discovery", "recommended.json");
+}
+
+function loadCachedCatalog() {
+	try {
+		const raw = readFileSync(resolveCatalogCachePath(), "utf8");
+		return normalizeCatalog(JSON.parse(raw), "cache");
+	} catch {
+		return null;
+	}
+}
+
+function saveCachedCatalog(catalog) {
+	const path = resolveCatalogCachePath();
+	mkdirSync(dirname(path), { recursive: true });
+	const payload = {
+		version: catalog.version,
+		updatedAt: catalog.updatedAt,
+		note: catalog.note,
+		categories: catalog.categories,
+		plugins: catalog.plugins,
+		_cachedAt: new Date().toISOString(),
+		_origin: catalog.origin,
+	};
+	writeFileSync(path, JSON.stringify(payload, null, 2), "utf8");
+}
+
+function pickNewerCatalog(...candidates) {
+	let best = null;
+	for (const row of candidates) {
+		if (!row || !Array.isArray(row.plugins)) continue;
+		if (!best || (row.version || 0) > (best.version || 0)) best = row;
+		else if ((row.version || 0) === (best.version || 0) && row.origin !== "bundled" && best.origin === "bundled") {
+			best = row;
+		}
+	}
+	return best || emptyCatalog();
+}
+
+async function fetchCatalogFromUrl(url, timeoutMs = 12000) {
+	const trimmed = String(url || "").trim();
+	if (!trimmed) return null;
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		const response = await fetch(trimmed, {
+			headers: {
+				Accept: "application/json,text/plain,*/*",
+				"User-Agent": USER_AGENT,
+			},
+			signal: controller.signal,
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP ${response.status}`);
+		}
+		const text = await response.text();
+		const data = JSON.parse(text);
+		if (!Array.isArray(data.plugins)) {
+			throw new Error("catalog missing plugins[]");
+		}
+		const host = (() => {
+			try {
+				return new URL(trimmed).hostname;
+			} catch {
+				return "";
+			}
+		})();
+		const origin = /gitee\.com/i.test(host) ? "gitee" : /githubusercontent\.com|github\.com/i.test(host) ? "github" : "remote";
+		return normalizeCatalog(data, origin);
+	} finally {
+		clearTimeout(timer);
+	}
+}
+
+function mapCatalogPlugin(row) {
+	return {
+		source: row.source || "npm",
+		spec: row.spec,
+		installSpec: row.spec,
+		title: row.title || row.spec,
+		description: row.description || "",
+		url: row.url || `https://www.npmjs.com/package/${row.spec}`,
+		stars: null,
+		bundle: null,
+		categories: Array.isArray(row.categories) ? row.categories : [],
+		tags: Array.isArray(row.tags) ? row.tags : [],
+		featured: row.featured === true,
+		rank: typeof row.rank === "number" ? row.rank : 0,
+		related: Array.isArray(row.related) ? row.related : [],
+		catalogId: row.id || row.spec,
+		reason: row.reason || null,
+	};
+}
+
+function filterCatalogPlugins(catalog, { category, query, personalize, installedNames }) {
+	const installed = new Set(
+		(Array.isArray(installedNames) ? installedNames : []).map((name) => String(name || "").trim()).filter(Boolean),
+	);
+	const allPlugins = Array.isArray(catalog?.plugins) ? catalog.plugins : [];
+	let rows = allPlugins.slice();
+
+	if (category && category !== "all") {
+		if (category === "featured") {
+			rows = rows.filter((row) => row.featured === true || (row.categories || []).includes("featured"));
+		} else {
+			rows = rows.filter((row) => (row.categories || []).includes(category));
+		}
+	}
+
+	const q = String(query || "")
+		.trim()
+		.toLowerCase();
+	if (q) {
+		rows = rows.filter((row) => {
+			const hay = [row.spec, row.title, row.description, ...(row.tags || []), ...(row.categories || [])]
+				.join(" ")
+				.toLowerCase();
+			return hay.includes(q);
+		});
+	}
+
+	if (personalize) {
+		const categoryScore = new Map();
+		const installedSpecs = new Set();
+		for (const row of allPlugins) {
+			if (!installed.has(row.spec) && !installed.has(row.title) && !installed.has(row.id)) continue;
+			installedSpecs.add(row.spec);
+			for (const cat of row.categories || []) {
+				if (cat === "featured") continue;
+				categoryScore.set(cat, (categoryScore.get(cat) || 0) + 2);
+			}
+			for (const rel of row.related || []) {
+				categoryScore.set(`rel:${rel}`, (categoryScore.get(`rel:${rel}`) || 0) + 5);
+			}
+		}
+
+		const scored = rows
+			.filter((row) => !installed.has(row.spec) && !installedSpecs.has(row.spec))
+			.map((row) => {
+				let score = (row.rank || 0) + (row.featured ? 12 : 0);
+				const reasons = [];
+				for (const cat of row.categories || []) {
+					if (cat === "featured") continue;
+					const boost = categoryScore.get(cat) || 0;
+					if (boost) {
+						score += boost * 3;
+						reasons.push(cat);
+					}
+				}
+				const relBoost = categoryScore.get(`rel:${row.spec}`) || 0;
+				if (relBoost) {
+					score += relBoost;
+					reasons.push("related");
+				}
+				if (!reasons.length && row.featured) reasons.push("featured");
+				return { ...row, reason: reasons[0] || (row.featured ? "featured" : "popular"), _score: score };
+			});
+
+		scored.sort((a, b) => b._score - a._score || String(a.spec).localeCompare(String(b.spec)));
+		return scored.map(({ _score, ...rest }) => rest);
+	}
+
+	rows.sort((a, b) => (b.rank || 0) - (a.rank || 0) || String(a.spec).localeCompare(String(b.spec)));
+	return rows;
+}
 
 function githubHeaders(token) {
 	const headers = {
@@ -166,13 +375,125 @@ class PluginDiscoveryService extends TypertRemoteService {
 		maxInspect: z.number().min(0).max(30).default(10),
 		githubToken: z.string().default(""),
 		openPanelOnLoad: z.boolean().default(false),
+		/** 是否从远程 raw JSON 自动刷新推荐目录（优先 Gitee） */
+		catalogRemoteEnabled: z.boolean().default(true),
+		catalogGiteeUrl: z.string().default(DEFAULT_CATALOG_GITEE_URL),
+		catalogGithubUrl: z.string().default(DEFAULT_CATALOG_GITHUB_URL),
+		/** 远程检查间隔；期间复用内存/磁盘缓存 */
+		catalogRefreshTtlMs: z.number().min(0).max(86400000 * 7).default(3600000),
 	});
 
 	constructor(ctx, config) {
 		super(ctx, "pluginDiscovery");
 		this.config = config;
 		this.cache = new Map();
+		this.catalog = pickNewerCatalog(loadBundledCatalog(), loadCachedCatalog());
+		this.catalogCheckedAt = 0;
+		this.catalogRefreshPromise = null;
 		this.ctx.effect(() => this.registerTools());
+		// 启动后后台拉一次，不阻塞启动
+		this.ctx.effect(() => {
+			void this.refreshCatalog({ force: false }).catch(() => {});
+			return () => {};
+		});
+	}
+
+	getCatalog() {
+		return this.catalog || loadBundledCatalog();
+	}
+
+	catalogMeta() {
+		const catalog = this.getCatalog();
+		return {
+			version: catalog.version || 0,
+			updatedAt: catalog.updatedAt || "",
+			origin: catalog.origin || "bundled",
+			checkedAt: this.catalogCheckedAt || null,
+		};
+	}
+
+	remoteCatalogUrls() {
+		const urls = [];
+		const gitee = String(this.config.catalogGiteeUrl || "").trim();
+		const github = String(this.config.catalogGithubUrl || "").trim();
+		if (gitee) urls.push({ url: gitee, label: "gitee" });
+		if (github) urls.push({ url: github, label: "github" });
+		return urls;
+	}
+
+	async refreshCatalog(options = {}) {
+		const force = options.force === true;
+		if (!this.config.catalogRemoteEnabled) {
+			return { ok: true, skipped: true, reason: "remote disabled", catalog: this.catalogMeta() };
+		}
+		const ttl = this.config.catalogRefreshTtlMs ?? 3600000;
+		if (!force && this.catalogCheckedAt && Date.now() - this.catalogCheckedAt < ttl) {
+			return { ok: true, skipped: true, reason: "ttl", catalog: this.catalogMeta() };
+		}
+		if (this.catalogRefreshPromise) return this.catalogRefreshPromise;
+
+		this.catalogRefreshPromise = (async () => {
+			const errors = [];
+			let remote = null;
+			for (const entry of this.remoteCatalogUrls()) {
+				try {
+					remote = await fetchCatalogFromUrl(entry.url);
+					if (remote) {
+						remote.origin = entry.label || remote.origin;
+						break;
+					}
+				} catch (error) {
+					errors.push(`${entry.label}: ${error instanceof Error ? error.message : String(error)}`);
+				}
+			}
+			this.catalogCheckedAt = Date.now();
+			if (!remote) {
+				return {
+					ok: false,
+					message: errors.join("; ") || "remote catalog unavailable",
+					catalog: this.catalogMeta(),
+				};
+			}
+			const current = this.getCatalog();
+			if ((remote.version || 0) > (current.version || 0)) {
+				this.catalog = remote;
+				try {
+					saveCachedCatalog(remote);
+				} catch (error) {
+					this.ctx.logger?.warn?.("[plugin-discovery] save catalog cache failed", error);
+				}
+				this.ctx.logger?.info?.(
+					`[plugin-discovery] catalog updated ${current.version} -> ${remote.version} via ${remote.origin}`,
+				);
+				return {
+					ok: true,
+					updated: true,
+					from: current.version,
+					to: remote.version,
+					origin: remote.origin,
+					catalog: this.catalogMeta(),
+				};
+			}
+			// 同版本也刷新缓存时间戳，便于离线复用最近一次成功源
+			if ((remote.version || 0) === (current.version || 0) && remote.origin !== "bundled") {
+				this.catalog = { ...current, origin: remote.origin, updatedAt: remote.updatedAt || current.updatedAt };
+				try {
+					saveCachedCatalog(this.catalog);
+				} catch {
+					/* ignore */
+				}
+			}
+			return {
+				ok: true,
+				updated: false,
+				origin: remote.origin,
+				catalog: this.catalogMeta(),
+			};
+		})().finally(() => {
+			this.catalogRefreshPromise = null;
+		});
+
+		return this.catalogRefreshPromise;
 	}
 
 	getFromCache(key) {
@@ -236,14 +557,82 @@ class PluginDiscoveryService extends TypertRemoteService {
 		return verified;
 	}
 
+	async listCatalog(options) {
+		if (!this.config.enabled) {
+			return { ok: false, message: "发现插件已停用", categories: [], results: [], total: 0 };
+		}
+		const opts = options && typeof options === "object" ? options : {};
+		const mode = opts.mode === "category" || opts.mode === "all" ? opts.mode : "recommend";
+		const category = typeof opts.category === "string" ? opts.category.trim() : "";
+		const query = typeof opts.query === "string" ? opts.query : "";
+		let installedNames = Array.isArray(opts.installedNames) ? opts.installedNames : null;
+		if (!installedNames) {
+			const listed = await this.listInstalled();
+			installedNames = listed.ok ? listed.names : [];
+		}
+
+		// 打开推荐/分类时尝试按 TTL 拉远程；失败静默回退本地
+		await this.refreshCatalog({ force: opts.refresh === true }).catch(() => {});
+
+		const catalog = this.getCatalog();
+		const personalize = mode === "recommend";
+		const effectiveCategory = mode === "category" ? category || "featured" : mode === "all" ? "" : "";
+		const rows = filterCatalogPlugins(catalog, {
+			category: effectiveCategory,
+			query,
+			personalize,
+			installedNames,
+		});
+		const results = rows.map(mapCatalogPlugin);
+		return {
+			ok: true,
+			mode: personalize ? "recommend" : mode === "all" ? "all" : "category",
+			category: effectiveCategory || null,
+			updatedAt: catalog.updatedAt,
+			catalogVersion: catalog.version || 0,
+			catalogOrigin: catalog.origin || "bundled",
+			categories: catalog.categories,
+			results,
+			total: results.length,
+		};
+	}
+
 	async search(query, options) {
 		if (!this.config.enabled) {
 			return { ok: false, message: "发现插件已停用", results: [], total: 0 };
 		}
 		const opts = options && typeof options === "object" ? options : {};
 		const q = String(query || "").trim() || "dsh";
-		const source = opts.source === "npm" || opts.source === "github" ? opts.source : "all";
+		const source =
+			opts.source === "npm" || opts.source === "github" || opts.source === "catalog"
+				? opts.source
+				: "all";
 		const verify = opts.verify === true;
+
+		if (source === "catalog") {
+			await this.refreshCatalog({ force: false }).catch(() => {});
+			const listed = await this.listInstalled();
+			const catalog = this.getCatalog();
+			const rows = filterCatalogPlugins(catalog, {
+				category: opts.category || "",
+				query: q === "dsh" ? "" : q,
+				personalize: opts.personalize === true,
+				installedNames: listed.ok ? listed.names : [],
+			});
+			const results = rows.map(mapCatalogPlugin);
+			return {
+				ok: true,
+				cached: false,
+				query: q,
+				source,
+				verify: false,
+				results,
+				total: results.length,
+				catalogVersion: catalog.version || 0,
+				catalogOrigin: catalog.origin || "bundled",
+			};
+		}
+
 		const key = `${cacheKey(q, source)}:v${verify ? 1 : 0}`;
 		const cached = this.getFromCache(key);
 		if (cached && !opts.skipCache) {
@@ -478,7 +867,7 @@ class PluginDiscoveryService extends TypertRemoteService {
 						query: { type: "string", required: true, description: "Search keywords" },
 						source: {
 							type: "string",
-							enum: ["all", "npm", "github"],
+							enum: ["all", "npm", "github", "catalog"],
 							description: "Limit search source",
 						},
 					},
@@ -488,6 +877,35 @@ class PluginDiscoveryService extends TypertRemoteService {
 					},
 					presentCall: (_args, partial) =>
 						present(`Search DSH plugins: ${partial?.query ?? "…"}`),
+				}),
+			),
+		);
+		disposers.push(
+			this.ctx.tools.register(
+				defineTool({
+					name: "plugin_discovery_catalog",
+					description:
+						"List curated DSH plugin recommendations and categories bundled with dsh-plugin-discovery.",
+					parameters: {
+						mode: {
+							type: "string",
+							enum: ["recommend", "category", "all"],
+							description: "recommend = personalized; category = filter by category; all = full catalog",
+						},
+						category: {
+							type: "string",
+							description: "Category id when mode=category (pet, theme, im, memory, ...)",
+						},
+					},
+					output: toolOutput,
+					async execute(args) {
+						return service.listCatalog({
+							mode: args.mode || "recommend",
+							category: args.category || "",
+						});
+					},
+					presentCall: (_args, partial) =>
+						present(`DSH plugin catalog: ${partial?.mode || "recommend"}`),
 				}),
 			),
 		);
@@ -520,6 +938,7 @@ class PluginDiscoveryService extends TypertRemoteService {
 }
 
 markRemoteMethod(PluginDiscoveryService.prototype, "search");
+markRemoteMethod(PluginDiscoveryService.prototype, "listCatalog");
 markRemoteMethod(PluginDiscoveryService.prototype, "resolve");
 markRemoteMethod(PluginDiscoveryService.prototype, "installPlugin");
 markRemoteMethod(PluginDiscoveryService.prototype, "listInstalled");

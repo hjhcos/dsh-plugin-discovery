@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "发现 DSH 插件",
-    "description": "在 GitHub 与 npm 上搜索社区 DSH Bundle，经 inspect 校验后安装。"
+    "description": "精选推荐与分类浏览社区 DSH Bundle，也可在 GitHub / npm 搜索并安装。"
   },
   "panel": "发现插件",
   "searchPlaceholder": "搜索关键词，例如 桌宠、壁纸、dsh",
@@ -10,6 +10,9 @@
   "sourceAll": "全部",
   "sourceNpm": "npm",
   "sourceGithub": "GitHub",
+  "browseRecommend": "为你推荐",
+  "browseCategory": "分类浏览",
+  "browseSearch": "在线搜索",
   "warning": "社区插件非 DeepSeek 官方维护，安装前请自行审阅仓库与权限。",
   "noResults": "未找到符合条件的 DSH Bundle。",
   "install": "安装",

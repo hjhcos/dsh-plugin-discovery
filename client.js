@@ -39,6 +39,7 @@ window.__ModuleLoader__.load({
 			pageStatus: "第 {page} / {pages} 页 · 共 {total} 项",
 			sourceNpmBadge: "npm",
 			sourceGithubBadge: "GitHub",
+			sourceCatalogBadge: "精选",
 			stars: "{n} stars",
 			emptyTitle: "还没有列表",
 			loadFailed: "加载失败",
@@ -48,6 +49,33 @@ window.__ModuleLoader__.load({
 			installLog: "安装输出：{text}",
 			installFailed: "安装失败",
 			retry: "重试",
+			browseRecommend: "为你推荐",
+			browseCategory: "分类浏览",
+			browseSearch: "在线搜索",
+			recommendCardTitle: "个性化推荐",
+			recommendCardDesc: "根据你已安装的插件偏好，从精选目录排序推荐；目录可从 Gitee 自动更新。",
+			categoryCardTitle: "按分类浏览",
+			categoryCardDesc: "市面常用 DSH 插件收录在 JSON 目录中，优先从 Gitee 拉取最新版。",
+			categoryAll: "全部精选",
+			catalogMeta: "目录 v{version} · 来源 {origin}",
+			catalogOriginBundled: "插件内置",
+			catalogOriginCache: "本地缓存",
+			catalogOriginGitee: "Gitee",
+			catalogOriginGithub: "GitHub",
+			catalogOriginRemote: "远程",
+			refreshCatalog: "刷新目录",
+			reasonFeatured: "精选",
+			reasonRelated: "与已装相关",
+			reasonPopular: "热门",
+			reasonPet: "桌宠爱好者",
+			reasonTheme: "主题爱好者",
+			reasonIm: "IM 通道",
+			reasonMemory: "记忆相关",
+			reasonProductivity: "效率相关",
+			reasonMedia: "多媒体",
+			reasonRemote: "远程相关",
+			reasonMarketplace: "市场相关",
+			reasonAgent: "智能体相关",
 		};
 		const en = {
 			panel: "Discover",
@@ -80,6 +108,7 @@ window.__ModuleLoader__.load({
 			pageStatus: "Page {page} / {pages} · {total} items",
 			sourceNpmBadge: "npm",
 			sourceGithubBadge: "GitHub",
+			sourceCatalogBadge: "Curated",
 			stars: "{n} stars",
 			emptyTitle: "Nothing here yet",
 			loadFailed: "Failed to load",
@@ -89,6 +118,33 @@ window.__ModuleLoader__.load({
 			installLog: "Output: {text}",
 			installFailed: "Install failed",
 			retry: "Retry",
+			browseRecommend: "For you",
+			browseCategory: "Categories",
+			browseSearch: "Online search",
+			recommendCardTitle: "Personalized picks",
+			recommendCardDesc: "Ranked from the curated catalog; auto-updates from Gitee when possible.",
+			categoryCardTitle: "Browse by category",
+			categoryCardDesc: "Common DSH plugins live in a JSON catalog, preferring Gitee for updates.",
+			categoryAll: "All featured",
+			catalogMeta: "Catalog v{version} · {origin}",
+			catalogOriginBundled: "bundled",
+			catalogOriginCache: "local cache",
+			catalogOriginGitee: "Gitee",
+			catalogOriginGithub: "GitHub",
+			catalogOriginRemote: "remote",
+			refreshCatalog: "Refresh catalog",
+			reasonFeatured: "Featured",
+			reasonRelated: "Related to installed",
+			reasonPopular: "Popular",
+			reasonPet: "Pets fans",
+			reasonTheme: "Theme fans",
+			reasonIm: "Messaging",
+			reasonMemory: "Memory",
+			reasonProductivity: "Productivity",
+			reasonMedia: "Media",
+			reasonRemote: "Remote",
+			reasonMarketplace: "Marketplace",
+			reasonAgent: "Agents",
 		};
 
 		function format(template, vars) {
@@ -286,6 +342,38 @@ window.__ModuleLoader__.load({
 				flexWrap: "wrap",
 				gap: "10px",
 				alignItems: "center",
+			},
+			browseTabs: {
+				display: "flex",
+				flexWrap: "wrap",
+				gap: "8px",
+				alignItems: "center",
+			},
+			chips: {
+				display: "flex",
+				flexWrap: "wrap",
+				gap: "8px",
+				alignItems: "center",
+			},
+			chip: {
+				display: "inline-flex",
+				alignItems: "center",
+				height: "28px",
+				padding: "0 12px",
+				borderRadius: "var(--dsw-radius-sm, 8px)",
+				border: "1px solid var(--dsw-alias-border-l2, #d8dde6)",
+				background: "var(--dsw-alias-bg-base, #ffffff)",
+				color: "var(--dsw-alias-label-secondary)",
+				fontSize: "12px",
+				fontWeight: 500,
+				lineHeight: "18px",
+				cursor: "pointer",
+				fontFamily: "var(--dsw-font-family)",
+			},
+			chipActive: {
+				borderColor: "var(--dsw-alias-state-business-primary, #4176e6)",
+				background: "color-mix(in srgb, var(--dsw-alias-state-business-primary, #4176e6) 12%, transparent)",
+				color: "var(--dsw-alias-state-business-primary, #4176e6)",
 			},
 			searchGrow: {
 				flex: "1 1 240px",
@@ -575,6 +663,45 @@ window.__ModuleLoader__.load({
 			);
 		}
 
+		function Chip(props) {
+			return h(
+				"button",
+				{
+					type: "button",
+					disabled: props.disabled,
+					style: Object.assign({}, styles.chip, props.active ? styles.chipActive : null),
+					onClick: props.onClick,
+				},
+				props.children,
+			);
+		}
+
+		function reasonLabel(t, reason) {
+			const keyMap = {
+				featured: "reasonFeatured",
+				related: "reasonRelated",
+				popular: "reasonPopular",
+				pet: "reasonPet",
+				theme: "reasonTheme",
+				im: "reasonIm",
+				memory: "reasonMemory",
+				productivity: "reasonProductivity",
+				media: "reasonMedia",
+				remote: "reasonRemote",
+				marketplace: "reasonMarketplace",
+				agent: "reasonAgent",
+			};
+			const key = keyMap[reason] || "reasonPopular";
+			return t(key);
+		}
+
+		function categoryLabel(cat, lang) {
+			if (!cat) return "";
+			const label = cat.label || {};
+			if (lang === "en") return label.en || label.zh || cat.id;
+			return label.zh || label.en || cat.id;
+		}
+
 		function unwrapRemote(result, fallbackMessage) {
 			if (!result) return { ok: false, message: fallbackMessage };
 			if (result.ok === false) {
@@ -590,6 +717,14 @@ window.__ModuleLoader__.load({
 		function Panel(props) {
 			const api = props.api;
 			const t = props.t;
+			const lang = React.useMemo(() => {
+				const sample = String(t("browseRecommend") || "");
+				return /[\u4e00-\u9fff]/.test(sample) ? "zh" : "en";
+			}, [t]);
+			const [browseMode, setBrowseMode] = React.useState("recommend");
+			const [category, setCategory] = React.useState("featured");
+			const [categories, setCategories] = React.useState([]);
+			const [catalogInfo, setCatalogInfo] = React.useState({ version: 0, origin: "bundled" });
 			const [query, setQuery] = React.useState(DEFAULT_QUERY);
 			const [source, setSource] = React.useState("all");
 			const [results, setResults] = React.useState([]);
@@ -602,10 +737,14 @@ window.__ModuleLoader__.load({
 			const [jobs, setJobs] = React.useState(() => readJobCache());
 			const [page, setPage] = React.useState(1);
 			const jobsRef = React.useRef(jobs);
+			const installedNamesRef = React.useRef(installedNames);
 			React.useEffect(() => {
 				jobsRef.current = jobs;
 				writeJobCache(jobs);
 			}, [jobs]);
+			React.useEffect(() => {
+				installedNamesRef.current = installedNames;
+			}, [installedNames]);
 
 			const refreshInstalled = React.useCallback(async () => {
 				if (!api || typeof api.listInstalled !== "function") return;
@@ -694,6 +833,52 @@ window.__ModuleLoader__.load({
 					});
 				},
 				[markInstalled],
+			);
+
+			const runCatalog = React.useCallback(
+				async (mode, nextCategory) => {
+					setBusy(true);
+					setMessage("");
+					setError("");
+					try {
+						if (!api || typeof api.listCatalog !== "function") {
+							setResults([]);
+							setError(t("loadFailed") + ": catalog unavailable");
+							return;
+						}
+						const [res] = await Promise.all([
+							api.listCatalog({
+								mode: mode === "category" ? "category" : "recommend",
+								category: nextCategory || "featured",
+								installedNames: [...installedNamesRef.current],
+								refresh: false,
+							}),
+							refreshInstalled(),
+						]);
+						if (!res || !res.ok) {
+							setResults([]);
+							setError((res && res.message) || t("loadFailed"));
+						} else {
+							if (Array.isArray(res.categories) && res.categories.length) {
+								setCategories(res.categories);
+							}
+							setCatalogInfo({
+								version: res.catalogVersion || 0,
+								origin: res.catalogOrigin || "bundled",
+							});
+							const list = res.results || [];
+							setResults(list);
+							setPage(1);
+							if (!list.length) setMessage(t("noResults"));
+						}
+					} catch (e) {
+						setResults([]);
+						setError((e && e.message) || String(e));
+					} finally {
+						setBusy(false);
+					}
+				},
+				[api, refreshInstalled, t],
 			);
 
 			const runSearch = React.useCallback(
@@ -834,15 +1019,31 @@ window.__ModuleLoader__.load({
 			}, [api, finishJob, refreshInstalled, t]);
 
 			React.useEffect(() => {
+				if (browseMode === "recommend") {
+					void runCatalog("recommend", "featured");
+				} else if (browseMode === "category") {
+					void runCatalog("category", category);
+				}
+			}, [browseMode, category, runCatalog]);
+
+			React.useEffect(() => {
+				if (browseMode !== "search") return;
 				void runSearch(query.trim() || DEFAULT_QUERY, source);
-			}, [source, runSearch]);
+			}, [browseMode, source, runSearch]);
 
 			const pages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
 			const safePage = Math.min(page, pages);
 			const pageItems = results.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
 			const onSearch = () => {
+				setBrowseMode("search");
 				void runSearch(query.trim() || DEFAULT_QUERY, source);
+			};
+
+			const onBrowseMode = (mode) => {
+				setBrowseMode(mode);
+				setMessage("");
+				setError("");
 			};
 
 			const onResolve = async () => {
@@ -851,6 +1052,7 @@ window.__ModuleLoader__.load({
 				if (raw && !/^https?:\/\//i.test(raw) && !/^(github:|gitlab:|bitbucket:)/i.test(raw) && !/^[@a-z0-9_.-]+\/[a-z0-9_.-]+$/i.test(raw) && (/\s/.test(raw) || /[\u4e00-\u9fff]/.test(raw))) {
 					setQuery(raw);
 					setResolveInput("");
+					setBrowseMode("search");
 					void runSearch(raw, source);
 					return;
 				}
@@ -975,6 +1177,65 @@ window.__ModuleLoader__.load({
 				{ value: "npm", label: t("sourceNpm") },
 				{ value: "github", label: t("sourceGithub") },
 			];
+			const browseOptions = [
+				{ value: "recommend", label: t("browseRecommend") },
+				{ value: "category", label: t("browseCategory") },
+				{ value: "search", label: t("browseSearch") },
+			];
+			const categoryChips = [
+				{ id: "featured", label: t("categoryAll") },
+				...categories
+					.filter((cat) => cat && cat.id && cat.id !== "featured")
+					.map((cat) => ({ id: cat.id, label: categoryLabel(cat, lang) })),
+			];
+			const browseCardTitle =
+				browseMode === "recommend"
+					? t("recommendCardTitle")
+					: browseMode === "category"
+						? t("categoryCardTitle")
+						: t("searchCardTitle");
+			const browseCardDesc =
+				browseMode === "recommend"
+					? t("recommendCardDesc")
+					: browseMode === "category"
+						? t("categoryCardDesc")
+						: t("searchCardDesc");
+			const originKey =
+				catalogInfo.origin === "gitee"
+					? "catalogOriginGitee"
+					: catalogInfo.origin === "github"
+						? "catalogOriginGithub"
+						: catalogInfo.origin === "cache"
+							? "catalogOriginCache"
+							: catalogInfo.origin === "remote"
+								? "catalogOriginRemote"
+								: "catalogOriginBundled";
+			const onRefreshCatalog = () => {
+				void (async () => {
+					setBusy(true);
+					try {
+						if (api && typeof api.listCatalog === "function") {
+							const res = await api.listCatalog({
+								mode: browseMode === "category" ? "category" : "recommend",
+								category,
+								installedNames: [...installedNamesRef.current],
+								refresh: true,
+							});
+							if (res && res.ok) {
+								if (Array.isArray(res.categories)) setCategories(res.categories);
+								setCatalogInfo({
+									version: res.catalogVersion || 0,
+									origin: res.catalogOrigin || "bundled",
+								});
+								setResults(res.results || []);
+								setPage(1);
+							}
+						}
+					} finally {
+						setBusy(false);
+					}
+				})();
+			};
 
 			return h(
 				"div",
@@ -994,33 +1255,85 @@ window.__ModuleLoader__.load({
 						h(
 							"div",
 							{ style: styles.cardHead },
-							h("h2", { style: styles.cardTitle }, t("searchCardTitle")),
-							h("p", { style: styles.cardDesc }, t("searchCardDesc")),
+							h("h2", { style: styles.cardTitle }, browseCardTitle),
+							h("p", { style: styles.cardDesc }, browseCardDesc),
+							browseMode !== "search"
+								? h(
+										"p",
+										{ style: styles.cardDesc },
+										format(t("catalogMeta"), {
+											version: catalogInfo.version || 0,
+											origin: t(originKey),
+										}),
+									)
+								: null,
 						),
 						h(
 							"div",
-							{ style: styles.toolbar },
-							h(
-								"div",
-								{ style: styles.searchGrow },
-								h(Field, {
-									value: query,
-									placeholder: t("searchPlaceholder"),
-									disabled: busy,
-									onChange: (e) => setQuery(e.target.value),
-									onKeyDown: (e) => {
-										if (e.key === "Enter") onSearch();
-									},
-								}),
-							),
+							{ style: styles.browseTabs },
 							h(SourceSeg, {
-								value: source,
-								options: sourceOptions,
+								value: browseMode,
+								options: browseOptions,
 								disabled: busy,
-								onChange: (next) => setSource(next),
+								onChange: onBrowseMode,
 							}),
-							h(Btn, { disabled: busy, onClick: onSearch }, busy ? t("searching") : t("search")),
+							browseMode !== "search"
+								? h(
+										Btn,
+										{
+											variant: "outline",
+											size: "sm",
+											disabled: busy,
+											onClick: onRefreshCatalog,
+										},
+										t("refreshCatalog"),
+									)
+								: null,
 						),
+						browseMode === "category"
+							? h(
+									"div",
+									{ style: styles.chips },
+									categoryChips.map((chip) =>
+										h(
+											Chip,
+											{
+												key: chip.id,
+												active: category === chip.id,
+												disabled: busy,
+												onClick: () => setCategory(chip.id),
+											},
+											chip.label,
+										),
+									),
+								)
+							: null,
+						browseMode === "search"
+							? h(
+									"div",
+									{ style: styles.toolbar },
+									h(
+										"div",
+										{ style: styles.searchGrow },
+										h(Field, {
+											value: query,
+											placeholder: t("searchPlaceholder"),
+											disabled: busy,
+											onChange: (e) => setQuery(e.target.value),
+											onKeyDown: (e) => {
+												if (e.key === "Enter") onSearch();
+											},
+										}),
+									),
+									h(SourceSeg, {
+										value: source,
+										options: sourceOptions,
+										disabled: busy,
+										onChange: (next) => setSource(next),
+									}),
+									h(Btn, { disabled: busy, onClick: onSearch }, busy ? t("searching") : t("search")),
+								)
+							: null,
 					),
 					h(
 						"div",
@@ -1092,14 +1405,19 @@ window.__ModuleLoader__.load({
 										const sourceBadge =
 											item.source === "github"
 												? t("sourceGithubBadge")
-												: item.source === "npm"
-													? t("sourceNpmBadge")
-													: item.source || "";
+												: item.catalogId || item.featured != null || item.reason
+													? t("sourceCatalogBadge")
+													: item.source === "npm"
+														? t("sourceNpmBadge")
+														: item.source || "";
 										const statusBadge = already
 											? h("span", { style: styles.badgeInstalled }, t("installedBadge"))
 											: installing
 												? h("span", { style: styles.badgeInstalling }, t("installingBadge"))
 												: h("span", { style: styles.badge }, t("notInstalledBadge"));
+										const whyBadge = item.reason
+											? h("span", { style: styles.badge }, reasonLabel(t, item.reason))
+											: null;
 										return h(
 											"div",
 											{ key: spec, style: styles.row },
@@ -1112,6 +1430,7 @@ window.__ModuleLoader__.load({
 													"div",
 													{ style: styles.meta },
 													sourceBadge ? h("span", { style: styles.badge }, sourceBadge) : null,
+													whyBadge,
 													statusBadge,
 													item.stars != null ? h("span", null, format(t("stars"), { n: item.stars })) : null,
 													item.url
@@ -1195,6 +1514,8 @@ window.__ModuleLoader__.load({
 		const QUERY_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/search:query");
 		const OPTIONS_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/search:options");
 		const SEARCH_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/search:result");
+		const CATALOG_OPTIONS_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/listCatalog:options");
+		const CATALOG_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/listCatalog:result");
 		const INPUT_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/resolve:input");
 		const RESOLVE_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/resolve:result");
 		const SPEC_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/installPlugin:spec");
@@ -1224,6 +1545,23 @@ window.__ModuleLoader__.load({
 						},
 					],
 					result: SEARCH_RESULT,
+				},
+				{
+					id: "dsh-plugin-discovery#pluginDiscovery/listCatalog",
+					service: "pluginDiscovery",
+					namespace: "pluginDiscovery",
+					method: "listCatalog",
+					invocation: { kind: "direct" },
+					parameters: [
+						{
+							name: "options",
+							wire: "options",
+							source: "json",
+							acceptsUndefined: true,
+							codec: CATALOG_OPTIONS_CODEC,
+						},
+					],
+					result: CATALOG_RESULT,
 				},
 				{
 					id: "dsh-plugin-discovery#pluginDiscovery/resolve",
@@ -1302,6 +1640,20 @@ window.__ModuleLoader__.load({
 					const value = unwrapRemote(wire, "search failed");
 					if (value && value.ok === false && value.message && !value.results) return value;
 					if (wire && wire.ok === false) return { ok: false, message: value.message, results: [] };
+					return value;
+				},
+				listCatalog: async (opts) => {
+					if (mountError) return { ok: false, message: mountError, categories: [], results: [] };
+					const remote = remoteNs();
+					if (!remote || typeof remote.listCatalog !== "function") {
+						return { ok: false, message: "remote.pluginDiscovery.listCatalog unavailable", categories: [], results: [] };
+					}
+					const wire = await remote.listCatalog(opts || {});
+					const value = unwrapRemote(wire, "listCatalog failed");
+					if (value && value.ok === false && value.message && !value.results) return value;
+					if (wire && wire.ok === false) {
+						return { ok: false, message: value.message, categories: [], results: [] };
+					}
 					return value;
 				},
 				resolve: async (input) => {

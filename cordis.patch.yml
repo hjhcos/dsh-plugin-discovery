@@ -8,3 +8,8 @@
         maxInspect: 10
         githubToken: ""
         openPanelOnLoad: false
+        # 推荐目录远程自动更新：优先 Gitee raw，失败再试 GitHub；按 JSON version 升级本地缓存
+        catalogRemoteEnabled: true
+        catalogGiteeUrl: 'https://gitee.com/hjhcos/dsh-plugin-discovery/raw/main/data/recommended.json'
+        catalogGithubUrl: 'https://raw.githubusercontent.com/hjhcos/dsh-plugin-discovery/main/data/recommended.json'
+        catalogRefreshTtlMs: 3600000

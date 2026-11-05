@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Discover DSH plugins",
-    "description": "Search GitHub and npm for community DSH bundles; install after inspect."
+    "description": "Curated recommendations and categories for community DSH bundles; also search GitHub/npm to install."
   },
   "panel": "Discover",
   "searchPlaceholder": "Keywords, e.g. pet, wallpaper, dsh",
@@ -10,6 +10,9 @@
   "sourceAll": "All",
   "sourceNpm": "npm",
   "sourceGithub": "GitHub",
+  "browseRecommend": "For you",
+  "browseCategory": "Categories",
+  "browseSearch": "Online search",
   "warning": "Community plugins are not official; review the repo before installing.",
   "noResults": "No DSH bundles matched.",
   "install": "Install",
