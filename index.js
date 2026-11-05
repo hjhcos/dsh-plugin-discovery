@@ -389,6 +389,42 @@ async function searchNpm(query, limit) {
 	});
 }
 
+/** 在线搜索时把精选目录命中置顶，避免同名冷门包（如 @dsh-ssh/dsh-ssh）盖过已验证的 @linxin666/dsh-ssh。 */
+function catalogHitsForQuery(catalog, query, limit) {
+	const rows = filterCatalogPlugins(catalog, {
+		category: "",
+		query,
+		personalize: false,
+		installedNames: [],
+	});
+	return rows.slice(0, Math.max(0, limit)).map((row) => ({
+		...mapCatalogPlugin(row),
+		reason: "catalog",
+	}));
+}
+
+function suggestCatalogAlternatives(catalog, failedSpec, limit = 3) {
+	const failed = String(failedSpec || "").trim().toLowerCase();
+	if (!failed) return [];
+	const tokens = failed
+		.replace(/^@/, "")
+		.split(/[/@._-]+/)
+		.map((part) => part.trim().toLowerCase())
+		.filter((part) => part.length >= 3 && part !== "dsh" && part !== "plugin");
+	const uniq = [];
+	const seen = new Set([failed]);
+	for (const token of tokens.length ? tokens : [failed]) {
+		for (const row of catalogHitsForQuery(catalog, token, 8)) {
+			const spec = String(row.spec || "").trim();
+			if (!spec || seen.has(spec.toLowerCase())) continue;
+			seen.add(spec.toLowerCase());
+			uniq.push(spec);
+			if (uniq.length >= limit) return uniq;
+		}
+	}
+	return uniq;
+}
+
 function mapGithubRepos(items) {
 	return (Array.isArray(items) ? items : []).map((repo) => ({
 		source: "github",
@@ -936,6 +972,9 @@ class PluginDiscoveryService extends TypertRemoteService {
 
 		const limit = this.config.maxCandidates;
 		const token = opts.githubToken ?? this.config.githubToken;
+		await this.refreshCatalog({ force: false }).catch(() => {});
+		const catalog = this.getCatalog();
+		const catalogHits = catalogHitsForQuery(catalog, q === "dsh" ? "" : q, limit);
 		let raw = [];
 		try {
 			if (source === "npm" || source === "all") {
@@ -946,23 +985,27 @@ class PluginDiscoveryService extends TypertRemoteService {
 			}
 		} catch (error) {
 			this.ctx.logger.warn("[plugin-discovery] search failed", error);
-			return {
-				ok: false,
-				message: error instanceof Error ? error.message : String(error),
-				results: [],
-				total: 0,
-			};
+			if (!catalogHits.length) {
+				return {
+					ok: false,
+					message: error instanceof Error ? error.message : String(error),
+					results: [],
+					total: 0,
+				};
+			}
+			// 在线源失败时仍返回精选命中，避免「搜得到却全空」
+			raw = [];
 		}
 
 		const seen = new Set();
 		const deduped = [];
-		for (const row of raw) {
+		for (const row of [...catalogHits, ...raw]) {
 			if (!row.spec || seen.has(row.spec)) continue;
 			seen.add(row.spec);
 			deduped.push({
 				...row,
 				installSpec: row.spec,
-				bundle: null,
+				bundle: row.bundle ?? null,
 			});
 			if (deduped.length >= limit) break;
 		}
@@ -1086,6 +1129,17 @@ class PluginDiscoveryService extends TypertRemoteService {
 				message: `「${existing}」已在 DSH 插件列表中，无需重复安装。请到「插件」页查看。`,
 			};
 		}
+		const withInstallHint = (message) => {
+			const text = String(message || "").trim() || "安装失败";
+			const looksNetwork =
+				/ERR_PNPM_META_FETCH_FAIL|fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|network|镜像/i.test(text);
+			if (!looksNetwork) return text;
+			const alts = suggestCatalogAlternatives(this.getCatalog(), trimmed);
+			if (!alts.length) {
+				return `${text}。若持续失败，可改用「分类浏览 / 为你推荐」里的精选包，或稍后重试。`;
+			}
+			return `${text}。可改试精选目录中的相近插件：${alts.join("、")}`;
+		};
 		try {
 			const result = await this.ctx.pluginManager.installBundle(trimmed, {
 				requestId,
@@ -1094,6 +1148,9 @@ class PluginDiscoveryService extends TypertRemoteService {
 			const packageName = result?.bundle || pre.name || trimmed;
 			const application = result?.application;
 			const failed = application === "failed" || application === "cancelled";
+			const rawMessage = failed
+				? result?.error?.message || `安装失败（${application || "unknown"}）`
+				: `「${packageName}」安装完成（${application || "applied"} / ${result?.stage || "install"}）`;
 			return {
 				ok: !failed,
 				alreadyInstalled: false,
@@ -1101,16 +1158,14 @@ class PluginDiscoveryService extends TypertRemoteService {
 				requestId,
 				application,
 				stage: result?.stage,
-				message: failed
-					? result?.error?.message || `安装失败（${application || "unknown"}）`
-					: `「${packageName}」安装完成（${application || "applied"} / ${result?.stage || "install"}）`,
+				message: failed ? withInstallHint(rawMessage) : rawMessage,
 				result,
 			};
 		} catch (error) {
 			return {
 				ok: false,
 				requestId,
-				message: error instanceof Error ? error.message : String(error),
+				message: withInstallHint(error instanceof Error ? error.message : String(error)),
 			};
 		}
 	}
