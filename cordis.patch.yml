@@ -1,0 +1,10 @@
+- insert:
+    - id: plugin-discovery
+      name: 'dsh-plugin-discovery'
+      config:
+        enabled: true
+        searchCacheTtlMs: 300000
+        maxCandidates: 40
+        maxInspect: 10
+        githubToken: ""
+        openPanelOnLoad: false
