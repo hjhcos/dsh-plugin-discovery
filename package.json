@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-discovery",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Discover and install community DSH bundles from the sidebar: newbie essentials, personalized recommendations, categories, and npm/GitHub search.",
   "author": "hjhcos",
