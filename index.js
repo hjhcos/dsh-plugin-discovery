@@ -14,6 +14,90 @@ const DEFAULT_CATALOG_GITEE_URL =
 	"https://gitee.com/hjhcos/dsh-plugin-discovery/raw/main/data/recommended.json";
 const DEFAULT_CATALOG_GITHUB_URL =
 	"https://raw.githubusercontent.com/hjhcos/dsh-plugin-discovery/main/data/recommended.json";
+const SELF_PACKAGE_NAME = "dsh-plugin-discovery";
+const DEFAULT_SELF_PACKAGE_GITEE_URL =
+	"https://gitee.com/hjhcos/dsh-plugin-discovery/raw/main/package.json";
+const DEFAULT_SELF_PACKAGE_GITHUB_URL =
+	"https://raw.githubusercontent.com/hjhcos/dsh-plugin-discovery/main/package.json";
+
+function readLocalPackageMeta() {
+	try {
+		const raw = readFileSync(join(__dirname, "package.json"), "utf8");
+		const data = JSON.parse(raw);
+		return {
+			name: data.name || SELF_PACKAGE_NAME,
+			version: String(data.version || "0.0.0"),
+		};
+	} catch {
+		return { name: SELF_PACKAGE_NAME, version: "0.0.0" };
+	}
+}
+
+function parseSemverParts(version) {
+	const cleaned = String(version || "0")
+		.trim()
+		.replace(/^v/i, "")
+		.split("-")[0]
+		.split("+")[0];
+	return cleaned.split(".").map((part) => {
+		const n = Number.parseInt(part, 10);
+		return Number.isFinite(n) ? n : 0;
+	});
+}
+
+/** @returns {number} 1 if a>b, -1 if a<b, 0 if equal */
+function compareSemver(a, b) {
+	const pa = parseSemverParts(a);
+	const pb = parseSemverParts(b);
+	const len = Math.max(pa.length, pb.length);
+	for (let i = 0; i < len; i += 1) {
+		const x = pa[i] || 0;
+		const y = pb[i] || 0;
+		if (x > y) return 1;
+		if (x < y) return -1;
+	}
+	return 0;
+}
+
+async function fetchJsonWithTimeout(url, timeoutMs = 12000) {
+	const trimmed = String(url || "").trim();
+	if (!trimmed) return null;
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		const response = await fetch(trimmed, {
+			headers: {
+				Accept: "application/json,text/plain,*/*",
+				"User-Agent": USER_AGENT,
+			},
+			signal: controller.signal,
+		});
+		if (!response.ok) throw new Error(`HTTP ${response.status}`);
+		return await response.json();
+	} finally {
+		clearTimeout(timer);
+	}
+}
+
+async function fetchLatestSelfVersion(urls) {
+	const errors = [];
+	for (const entry of urls) {
+		try {
+			if (entry.kind === "npm") {
+				const data = await fetchJsonWithTimeout(entry.url);
+				const version = data?.version || data?.["dist-tags"]?.latest;
+				if (version) return { version: String(version), origin: "npm", url: entry.url };
+			} else {
+				const data = await fetchJsonWithTimeout(entry.url);
+				const version = data?.version;
+				if (version) return { version: String(version), origin: entry.label || "remote", url: entry.url };
+			}
+		} catch (error) {
+			errors.push(`${entry.label || entry.kind}: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	}
+	return { version: null, origin: null, url: null, error: errors.join("; ") || "latest version unavailable" };
+}
 
 function emptyCatalog(error) {
 	return {
@@ -381,6 +465,14 @@ class PluginDiscoveryService extends TypertRemoteService {
 		catalogGithubUrl: z.string().default(DEFAULT_CATALOG_GITHUB_URL),
 		/** 远程检查间隔；期间复用内存/磁盘缓存 */
 		catalogRefreshTtlMs: z.number().min(0).max(86400000 * 7).default(3600000),
+		/** 启动与打开面板时检查本插件是否有新版本 */
+		selfUpdateCheckEnabled: z.boolean().default(true),
+		/** 发现新版本后自动执行更新（file: 本地开发安装会跳过自动更新） */
+		selfUpdateAuto: z.boolean().default(true),
+		selfUpdateCheckTtlMs: z.number().min(0).max(86400000 * 7).default(21600000),
+		selfPackageName: z.string().default(SELF_PACKAGE_NAME),
+		selfPackageGiteeUrl: z.string().default(DEFAULT_SELF_PACKAGE_GITEE_URL),
+		selfPackageGithubUrl: z.string().default(DEFAULT_SELF_PACKAGE_GITHUB_URL),
 	});
 
 	constructor(ctx, config) {
@@ -390,12 +482,204 @@ class PluginDiscoveryService extends TypertRemoteService {
 		this.catalog = pickNewerCatalog(loadBundledCatalog(), loadCachedCatalog());
 		this.catalogCheckedAt = 0;
 		this.catalogRefreshPromise = null;
+		this.selfUpdateCheckedAt = 0;
+		this.selfUpdateState = null;
+		this.selfUpdatePromise = null;
 		this.ctx.effect(() => this.registerTools());
 		// 启动后后台拉一次，不阻塞启动
 		this.ctx.effect(() => {
 			void this.refreshCatalog({ force: false }).catch(() => {});
+			void this.checkSelfUpdate({ force: false, auto: this.config.selfUpdateAuto === true }).catch(() => {});
 			return () => {};
 		});
+	}
+
+	getLocalInstallMeta() {
+		const local = readLocalPackageMeta();
+		const real = (() => {
+			try {
+				return join(__dirname);
+			} catch {
+				return "";
+			}
+		})();
+		const isFileInstall = /[\\/]bundles[\\/]dsh-plugin-discovery$/i.test(real.replace(/\\/g, "/"));
+		return {
+			name: this.config.selfPackageName || local.name || SELF_PACKAGE_NAME,
+			version: local.version,
+			isFileInstall,
+		};
+	}
+
+	selfUpdateSourceUrls() {
+		const name = this.config.selfPackageName || SELF_PACKAGE_NAME;
+		const urls = [
+			{
+				kind: "npm",
+				label: "npm",
+				url: `https://registry.npmjs.org/${encodeURIComponent(name)}/latest`,
+			},
+		];
+		const gitee = String(this.config.selfPackageGiteeUrl || "").trim();
+		const github = String(this.config.selfPackageGithubUrl || "").trim();
+		if (gitee) urls.push({ kind: "json", label: "gitee", url: gitee });
+		if (github) urls.push({ kind: "json", label: "github", url: github });
+		return urls;
+	}
+
+	async resolveInstalledSelfVersion() {
+		const local = this.getLocalInstallMeta();
+		try {
+			const bundles = await this.ctx.pluginManager.listBundles();
+			const row = (Array.isArray(bundles) ? bundles : []).find((item) => item && item.name === local.name);
+			if (row?.version) {
+				return { currentVersion: String(row.version), source: "bundle", isFileInstall: local.isFileInstall, name: local.name };
+			}
+		} catch {
+			/* ignore */
+		}
+		return {
+			currentVersion: local.version,
+			source: "package",
+			isFileInstall: local.isFileInstall,
+			name: local.name,
+		};
+	}
+
+	async checkSelfUpdate(options = {}) {
+		if (!this.config.enabled) {
+			return { ok: false, message: "发现插件已停用" };
+		}
+		if (this.config.selfUpdateCheckEnabled === false) {
+			return { ok: true, skipped: true, reason: "check disabled", update: this.selfUpdateState };
+		}
+		const force = options.force === true;
+		const auto = options.auto === true;
+		const ttl = this.config.selfUpdateCheckTtlMs ?? 21600000;
+		if (!force && this.selfUpdateCheckedAt && Date.now() - this.selfUpdateCheckedAt < ttl && this.selfUpdateState) {
+			if (auto && this.selfUpdateState.updateAvailable && !this.selfUpdateState.isFileInstall) {
+				return this.updateSelf({ latestVersion: this.selfUpdateState.latestVersion });
+			}
+			return { ok: true, skipped: true, reason: "ttl", update: this.selfUpdateState };
+		}
+		if (this.selfUpdatePromise) return this.selfUpdatePromise;
+
+		this.selfUpdatePromise = (async () => {
+			const installed = await this.resolveInstalledSelfVersion();
+			const latestInfo = await fetchLatestSelfVersion(this.selfUpdateSourceUrls());
+			this.selfUpdateCheckedAt = Date.now();
+			if (!latestInfo.version) {
+				this.selfUpdateState = {
+					...installed,
+					latestVersion: null,
+					updateAvailable: false,
+					origin: null,
+					checkedAt: this.selfUpdateCheckedAt,
+					error: latestInfo.error,
+				};
+				return { ok: false, message: latestInfo.error || "无法获取最新版本", update: this.selfUpdateState };
+			}
+			const updateAvailable = compareSemver(latestInfo.version, installed.currentVersion) > 0;
+			this.selfUpdateState = {
+				name: installed.name,
+				currentVersion: installed.currentVersion,
+				latestVersion: latestInfo.version,
+				updateAvailable,
+				origin: latestInfo.origin,
+				isFileInstall: installed.isFileInstall,
+				checkedAt: this.selfUpdateCheckedAt,
+			};
+			if (auto && updateAvailable && !installed.isFileInstall && this.config.selfUpdateAuto !== false) {
+				const updated = await this.updateSelf({ latestVersion: latestInfo.version });
+				return { ...updated, update: this.selfUpdateState };
+			}
+			return {
+				ok: true,
+				update: this.selfUpdateState,
+				message: updateAvailable
+					? `发现新版本 ${latestInfo.version}（当前 ${installed.currentVersion}）`
+					: `已是最新版本 ${installed.currentVersion}`,
+			};
+		})().finally(() => {
+			this.selfUpdatePromise = null;
+		});
+
+		return this.selfUpdatePromise;
+	}
+
+	async updateSelf(options = {}) {
+		if (!this.config.enabled) {
+			return { ok: false, message: "发现插件已停用" };
+		}
+		const installed = await this.resolveInstalledSelfVersion();
+		if (installed.isFileInstall) {
+			return {
+				ok: false,
+				skipped: true,
+				message: "当前为本地 file: 开发安装，已跳过自动更新。发布版用户会从 npm 升级。",
+				update: this.selfUpdateState,
+			};
+		}
+		let latestVersion = typeof options.latestVersion === "string" ? options.latestVersion.trim() : "";
+		if (!latestVersion) {
+			const checked = await this.checkSelfUpdate({ force: true, auto: false });
+			latestVersion = checked?.update?.latestVersion || "";
+			if (!checked?.update?.updateAvailable) {
+				return {
+					ok: true,
+					updated: false,
+					message: checked?.message || "没有可更新版本",
+					update: checked?.update || this.selfUpdateState,
+				};
+			}
+		}
+		const name = installed.name || SELF_PACKAGE_NAME;
+		const spec = `${name}@${latestVersion}`;
+		const requestId =
+			globalThis.crypto?.randomUUID?.() || `pd-self-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+		try {
+			const result = await this.ctx.pluginManager.installBundle(spec, {
+				requestId,
+				enabled: true,
+			});
+			const application = result?.application;
+			const failed = application === "failed" || application === "cancelled";
+			if (!failed) {
+				this.selfUpdateState = {
+					...(this.selfUpdateState || {}),
+					name,
+					currentVersion: latestVersion,
+					latestVersion,
+					updateAvailable: false,
+					origin: this.selfUpdateState?.origin || "npm",
+					isFileInstall: false,
+					checkedAt: Date.now(),
+				};
+			}
+			return {
+				ok: !failed,
+				updated: !failed,
+				spec,
+				requestId,
+				application,
+				packageName: name,
+				version: latestVersion,
+				message: failed
+					? result?.error?.message || `更新失败（${application || "unknown"}）`
+					: `已更新到 ${latestVersion}，请刷新页面或重启 dsh web 使界面生效`,
+				update: this.selfUpdateState,
+				result,
+			};
+		} catch (error) {
+			return {
+				ok: false,
+				updated: false,
+				spec,
+				requestId,
+				message: error instanceof Error ? error.message : String(error),
+				update: this.selfUpdateState,
+			};
+		}
 	}
 
 	getCatalog() {
@@ -573,6 +857,14 @@ class PluginDiscoveryService extends TypertRemoteService {
 
 		// 打开推荐/分类时尝试按 TTL 拉远程；失败静默回退本地
 		await this.refreshCatalog({ force: opts.refresh === true }).catch(() => {});
+		const selfUpdate = await this.checkSelfUpdate({
+			force: opts.refresh === true,
+			auto: this.config.selfUpdateAuto === true,
+		}).catch((error) => ({
+			ok: false,
+			message: error instanceof Error ? error.message : String(error),
+			update: this.selfUpdateState,
+		}));
 
 		const catalog = this.getCatalog();
 		const personalize = mode === "recommend";
@@ -594,6 +886,9 @@ class PluginDiscoveryService extends TypertRemoteService {
 			categories: catalog.categories,
 			results,
 			total: results.length,
+			selfUpdate: selfUpdate?.update || this.selfUpdateState,
+			selfUpdateMessage: selfUpdate?.message || null,
+			selfUpdated: selfUpdate?.updated === true,
 		};
 	}
 
@@ -929,6 +1224,28 @@ class PluginDiscoveryService extends TypertRemoteService {
 				}),
 			),
 		);
+		disposers.push(
+			this.ctx.tools.register(
+				defineTool({
+					name: "plugin_discovery_check_update",
+					description: "Check whether dsh-plugin-discovery has a newer npm/Gitee version and optionally update.",
+					parameters: {
+						autoUpdate: {
+							type: "boolean",
+							description: "If true and a newer version exists, install it now",
+						},
+					},
+					output: toolOutput,
+					async execute(args) {
+						return service.checkSelfUpdate({
+							force: true,
+							auto: args.autoUpdate === true,
+						});
+					},
+					presentCall: () => present("Check dsh-plugin-discovery update"),
+				}),
+			),
+		);
 		return () => {
 			for (const dispose of disposers.reverse()) dispose();
 		};
@@ -939,6 +1256,8 @@ class PluginDiscoveryService extends TypertRemoteService {
 
 markRemoteMethod(PluginDiscoveryService.prototype, "search");
 markRemoteMethod(PluginDiscoveryService.prototype, "listCatalog");
+markRemoteMethod(PluginDiscoveryService.prototype, "checkSelfUpdate");
+markRemoteMethod(PluginDiscoveryService.prototype, "updateSelf");
 markRemoteMethod(PluginDiscoveryService.prototype, "resolve");
 markRemoteMethod(PluginDiscoveryService.prototype, "installPlugin");
 markRemoteMethod(PluginDiscoveryService.prototype, "listInstalled");

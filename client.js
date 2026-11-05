@@ -64,6 +64,17 @@ window.__ModuleLoader__.load({
 			catalogOriginGithub: "GitHub",
 			catalogOriginRemote: "远程",
 			refreshCatalog: "刷新目录",
+			selfUpdateTitle: "发现插件有新版本",
+			selfUpdateDesc: "当前 {current} → 最新 {latest}（来源 {origin}）",
+			selfUpdateNow: "立即更新",
+			selfUpdateChecking: "正在检查更新…",
+			selfUpdateUpdating: "正在更新…",
+			selfUpdateLatest: "发现插件已是最新版 {version}",
+			selfUpdateDone: "已更新到 {version}，请刷新页面",
+			selfUpdateFileSkip: "本地开发安装，已跳过自动更新",
+			selfUpdateOriginNpm: "npm",
+			selfUpdateOriginGitee: "Gitee",
+			selfUpdateOriginGithub: "GitHub",
 			reasonFeatured: "精选",
 			reasonRelated: "与已装相关",
 			reasonPopular: "热门",
@@ -133,6 +144,17 @@ window.__ModuleLoader__.load({
 			catalogOriginGithub: "GitHub",
 			catalogOriginRemote: "remote",
 			refreshCatalog: "Refresh catalog",
+			selfUpdateTitle: "Discovery plugin update available",
+			selfUpdateDesc: "Current {current} → latest {latest} (via {origin})",
+			selfUpdateNow: "Update now",
+			selfUpdateChecking: "Checking for updates…",
+			selfUpdateUpdating: "Updating…",
+			selfUpdateLatest: "Discovery plugin is up to date ({version})",
+			selfUpdateDone: "Updated to {version}. Please refresh the page.",
+			selfUpdateFileSkip: "Local file: install — auto-update skipped",
+			selfUpdateOriginNpm: "npm",
+			selfUpdateOriginGitee: "Gitee",
+			selfUpdateOriginGithub: "GitHub",
 			reasonFeatured: "Featured",
 			reasonRelated: "Related to installed",
 			reasonPopular: "Popular",
@@ -581,6 +603,27 @@ window.__ModuleLoader__.load({
 				color: "var(--dsw-alias-state-warn-primary, var(--dsw-alias-label-secondary))",
 				fontSize: "13px",
 			},
+			updateBox: {
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "space-between",
+				gap: "12px",
+				flexWrap: "wrap",
+				padding: "12px 14px",
+				borderRadius: "var(--dsw-radius-sm, 8px)",
+				border: "1px solid color-mix(in srgb, var(--dsw-alias-state-business-primary, #4176e6) 35%, transparent)",
+				background: "color-mix(in srgb, var(--dsw-alias-state-business-primary, #4176e6) 8%, transparent)",
+				color: "var(--dsw-alias-label-primary)",
+				fontSize: "13px",
+				lineHeight: "20px",
+			},
+			updateText: {
+				display: "flex",
+				flexDirection: "column",
+				gap: "2px",
+				margin: 0,
+				flex: "1 1 220px",
+			},
 			pager: {
 				display: "flex",
 				alignItems: "center",
@@ -725,6 +768,8 @@ window.__ModuleLoader__.load({
 			const [category, setCategory] = React.useState("beginner");
 			const [categories, setCategories] = React.useState([]);
 			const [catalogInfo, setCatalogInfo] = React.useState({ version: 0, origin: "bundled" });
+			const [selfUpdate, setSelfUpdate] = React.useState(null);
+			const [selfUpdateBusy, setSelfUpdateBusy] = React.useState(false);
 			const [query, setQuery] = React.useState(DEFAULT_QUERY);
 			const [source, setSource] = React.useState("all");
 			const [results, setResults] = React.useState([]);
@@ -866,6 +911,10 @@ window.__ModuleLoader__.load({
 								version: res.catalogVersion || 0,
 								origin: res.catalogOrigin || "bundled",
 							});
+							if (res.selfUpdate) setSelfUpdate(res.selfUpdate);
+							if (res.selfUpdated && res.selfUpdate?.latestVersion) {
+								setMessage(format(t("selfUpdateDone"), { version: res.selfUpdate.latestVersion }));
+							}
 							const list = res.results || [];
 							setResults(list);
 							setPage(1);
@@ -1228,6 +1277,10 @@ window.__ModuleLoader__.load({
 									version: res.catalogVersion || 0,
 									origin: res.catalogOrigin || "bundled",
 								});
+								if (res.selfUpdate) setSelfUpdate(res.selfUpdate);
+								if (res.selfUpdated && res.selfUpdate?.latestVersion) {
+									setMessage(format(t("selfUpdateDone"), { version: res.selfUpdate.latestVersion }));
+								}
 								setResults(res.results || []);
 								setPage(1);
 							}
@@ -1237,6 +1290,48 @@ window.__ModuleLoader__.load({
 					}
 				})();
 			};
+
+			const onUpdateSelf = () => {
+				void (async () => {
+					if (!api || typeof api.updateSelf !== "function") return;
+					setSelfUpdateBusy(true);
+					setError("");
+					try {
+						const res = await api.updateSelf({
+							latestVersion: selfUpdate && selfUpdate.latestVersion,
+						});
+						if (res && res.update) setSelfUpdate(res.update);
+						if (res && res.ok && res.updated) {
+							setMessage(format(t("selfUpdateDone"), { version: res.version || res.update?.latestVersion }));
+							setSelfUpdate((prev) =>
+								prev
+									? {
+											...prev,
+											updateAvailable: false,
+											currentVersion: res.version || prev.latestVersion,
+											latestVersion: res.version || prev.latestVersion,
+										}
+									: prev,
+							);
+						} else if (res && res.skipped) {
+							setMessage(res.message || t("selfUpdateFileSkip"));
+						} else {
+							setError((res && res.message) || t("installFailed"));
+						}
+					} catch (e) {
+						setError((e && e.message) || String(e));
+					} finally {
+						setSelfUpdateBusy(false);
+					}
+				})();
+			};
+
+			const selfUpdateOriginLabel =
+				selfUpdate && selfUpdate.origin === "gitee"
+					? t("selfUpdateOriginGitee")
+					: selfUpdate && selfUpdate.origin === "github"
+						? t("selfUpdateOriginGithub")
+						: t("selfUpdateOriginNpm");
 
 			return h(
 				"div",
@@ -1250,6 +1345,36 @@ window.__ModuleLoader__.load({
 						h("h1", { style: styles.title }, t("panel")),
 						h("p", { style: styles.intro }, t("intro")),
 					),
+					selfUpdate && selfUpdate.updateAvailable
+						? h(
+								"div",
+								{ style: styles.updateBox },
+								h(
+									"div",
+									{ style: styles.updateText },
+									h("strong", null, t("selfUpdateTitle")),
+									h(
+										"span",
+										null,
+										format(t("selfUpdateDesc"), {
+											current: selfUpdate.currentVersion || "?",
+											latest: selfUpdate.latestVersion || "?",
+											origin: selfUpdateOriginLabel,
+										}),
+									),
+									selfUpdate.isFileInstall ? h("span", null, t("selfUpdateFileSkip")) : null,
+								),
+								h(
+									Btn,
+									{
+										size: "sm",
+										disabled: selfUpdateBusy || busy || !!selfUpdate.isFileInstall,
+										onClick: onUpdateSelf,
+									},
+									selfUpdateBusy ? t("selfUpdateUpdating") : t("selfUpdateNow"),
+								),
+							)
+						: null,
 					h(
 						"div",
 						{ style: styles.card },
@@ -1517,6 +1642,10 @@ window.__ModuleLoader__.load({
 		const SEARCH_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/search:result");
 		const CATALOG_OPTIONS_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/listCatalog:options");
 		const CATALOG_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/listCatalog:result");
+		const SELF_UPDATE_OPTIONS = strictJson("dsh-plugin-discovery#pluginDiscovery/checkSelfUpdate:options");
+		const SELF_UPDATE_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/checkSelfUpdate:result");
+		const SELF_UPDATE_APPLY_OPTIONS = strictJson("dsh-plugin-discovery#pluginDiscovery/updateSelf:options");
+		const SELF_UPDATE_APPLY_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/updateSelf:result");
 		const INPUT_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/resolve:input");
 		const RESOLVE_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/resolve:result");
 		const SPEC_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/installPlugin:spec");
@@ -1563,6 +1692,40 @@ window.__ModuleLoader__.load({
 						},
 					],
 					result: CATALOG_RESULT,
+				},
+				{
+					id: "dsh-plugin-discovery#pluginDiscovery/checkSelfUpdate",
+					service: "pluginDiscovery",
+					namespace: "pluginDiscovery",
+					method: "checkSelfUpdate",
+					invocation: { kind: "direct" },
+					parameters: [
+						{
+							name: "options",
+							wire: "options",
+							source: "json",
+							acceptsUndefined: true,
+							codec: SELF_UPDATE_OPTIONS,
+						},
+					],
+					result: SELF_UPDATE_RESULT,
+				},
+				{
+					id: "dsh-plugin-discovery#pluginDiscovery/updateSelf",
+					service: "pluginDiscovery",
+					namespace: "pluginDiscovery",
+					method: "updateSelf",
+					invocation: { kind: "direct" },
+					parameters: [
+						{
+							name: "options",
+							wire: "options",
+							source: "json",
+							acceptsUndefined: true,
+							codec: SELF_UPDATE_APPLY_OPTIONS,
+						},
+					],
+					result: SELF_UPDATE_APPLY_RESULT,
 				},
 				{
 					id: "dsh-plugin-discovery#pluginDiscovery/resolve",
@@ -1654,6 +1817,35 @@ window.__ModuleLoader__.load({
 					if (value && value.ok === false && value.message && !value.results) return value;
 					if (wire && wire.ok === false) {
 						return { ok: false, message: value.message, categories: [], results: [] };
+					}
+					return value;
+				},
+				checkSelfUpdate: async (opts) => {
+					if (mountError) return { ok: false, message: mountError };
+					const remote = remoteNs();
+					if (!remote || typeof remote.checkSelfUpdate !== "function") {
+						return { ok: false, message: "remote.pluginDiscovery.checkSelfUpdate unavailable" };
+					}
+					const wire = await remote.checkSelfUpdate(opts || {});
+					const value = unwrapRemote(wire, "checkSelfUpdate failed");
+					if (wire && wire.ok === false) return { ok: false, message: value.message, update: value.update };
+					return value;
+				},
+				updateSelf: async (opts) => {
+					if (mountError) return { ok: false, message: mountError };
+					const remote = remoteNs();
+					if (!remote || typeof remote.updateSelf !== "function") {
+						return { ok: false, message: "remote.pluginDiscovery.updateSelf unavailable" };
+					}
+					const wire = await remote.updateSelf(opts || {});
+					const value = unwrapRemote(wire, "updateSelf failed");
+					if (wire && wire.ok === false) {
+						return {
+							ok: false,
+							message: value.message,
+							skipped: !!(value && value.skipped),
+							update: value.update,
+						};
 					}
 					return value;
 				},

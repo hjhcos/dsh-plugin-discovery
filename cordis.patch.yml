@@ -13,3 +13,7 @@
         catalogGiteeUrl: 'https://gitee.com/hjhcos/dsh-plugin-discovery/raw/main/data/recommended.json'
         catalogGithubUrl: 'https://raw.githubusercontent.com/hjhcos/dsh-plugin-discovery/main/data/recommended.json'
         catalogRefreshTtlMs: 3600000
+        # 本插件自动检查 npm 最新版（Gitee package.json 兜底）；非 file: 安装时可自动更新
+        selfUpdateCheckEnabled: true
+        selfUpdateAuto: true
+        selfUpdateCheckTtlMs: 21600000

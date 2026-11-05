@@ -54,6 +54,7 @@ github:hjhcos/dsh-plugin-discovery
 - **个性化推荐**：按已装插件偏好排序
 - **分类浏览**：桌宠 / 主题 / IM / 记忆 / 效率 / 多媒体 / 远程 / 市场 / 多智能体
 - **远程目录更新**：优先 Gitee raw JSON，失败再试 GitHub；按 `version` 写入 `$DSH_HOME/cache/...`
+- **插件自更新**：启动/打开面板时检查 npm 最新版（Gitee `package.json` 兜底）；有新版本可自动或一键更新
 - 关键词搜索（全部 / npm / GitHub）与链接解析安装
 - 安装三态：未安装 / 安装中 / 已安装
 - 中英文界面
