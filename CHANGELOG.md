@@ -2,6 +2,12 @@
 
 本仓库每次发版都会同步更新 GitHub / Gitee，并在此记录版本说明。
 
+## 1.2.5 — 2026-11-07
+
+### 新增
+
+- 安装因 `build-blocked` / `ERR_PNPM_IGNORED_BUILDS` 失败时，弹出「批准依赖构建脚本」确认框；用户勾选同意后，通过 `installBundle({ approvedBuilds })` 代为写入 allowBuilds 并重试安装（不静默自动批准）。
+
 ## 1.2.4 — 2026-11-07
 
 ### 修复

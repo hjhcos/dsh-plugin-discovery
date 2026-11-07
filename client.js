@@ -63,6 +63,13 @@ window.__ModuleLoader__.load({
 			riskAltTitle: "推荐改用兼容插件",
 			riskAltDesc: "以下精选包更可能匹配当前 DSH 版本，可直接安装代替强行豁免：",
 			riskAltInstall: "安装推荐",
+			buildTitle: "需要批准依赖构建脚本",
+			buildDesc:
+				"安装「{spec}」时，pnpm 拦截了以下依赖的安装脚本（常用于编译原生模块）。批准后将以你的用户权限执行这些脚本，并重试安装。",
+			buildAck: "我已了解风险，允许这些依赖运行安装脚本并重试",
+			buildCancel: "取消",
+			buildConfirm: "批准并重试安装",
+			buildWorking: "正在批准并重试…",
 			browseRecommend: "为你推荐",
 			browseCategory: "分类浏览",
 			browseSearch: "在线搜索",
@@ -157,6 +164,13 @@ window.__ModuleLoader__.load({
 			riskAltTitle: "Try a compatible plugin instead",
 			riskAltDesc: "These curated packages are more likely to match this DSH version:",
 			riskAltInstall: "Install recommended",
+			buildTitle: "Dependency build scripts need approval",
+			buildDesc:
+				"Installing “{spec}” was blocked because pnpm ignored build scripts for: the packages listed below (often native modules). Approving runs those scripts as your user and retries the install.",
+			buildAck: "I understand and allow these packages to run install scripts",
+			buildCancel: "Cancel",
+			buildConfirm: "Approve and retry",
+			buildWorking: "Approving and retrying…",
 			browseRecommend: "For you",
 			browseCategory: "Categories",
 			browseSearch: "Online search",
@@ -930,6 +944,10 @@ window.__ModuleLoader__.load({
 			const [riskOpen, setRiskOpen] = React.useState(false);
 			const [riskAck, setRiskAck] = React.useState(false);
 			const [riskBusy, setRiskBusy] = React.useState(false);
+			const [buildPrompt, setBuildPrompt] = React.useState(null);
+			const [buildOpen, setBuildOpen] = React.useState(false);
+			const [buildAck, setBuildAck] = React.useState(false);
+			const [buildBusy, setBuildBusy] = React.useState(false);
 			const [busy, setBusy] = React.useState(false);
 			const [resolveInput, setResolveInput] = React.useState("");
 			const [installDetail, setInstallDetail] = React.useState("");
@@ -977,6 +995,24 @@ window.__ModuleLoader__.load({
 				setRiskOpen(false);
 				setRiskAck(false);
 			}, [riskBusy]);
+
+			const openBuildPrompt = React.useCallback((res, item) => {
+				const pending = Array.isArray(res && res.pendingBuilds) ? res.pendingBuilds.filter(Boolean) : [];
+				if (!(res && res.needsBuildApproval) || !pending.length) return;
+				setBuildAck(false);
+				setBuildPrompt({
+					spec: (res && res.installSpec) || (item && (item.installSpec || item.spec)) || "",
+					item: item || null,
+					pendingBuilds: pending,
+				});
+				setBuildOpen(true);
+			}, []);
+
+			const closeBuildPrompt = React.useCallback(() => {
+				if (buildBusy) return;
+				setBuildOpen(false);
+				setBuildAck(false);
+			}, [buildBusy]);
 
 			const refreshInstalled = React.useCallback(async () => {
 				if (!api || typeof api.listInstalled !== "function") return;
@@ -1241,11 +1277,13 @@ window.__ModuleLoader__.load({
 									detail: errText,
 								});
 								setError(errText);
-								openRiskPrompt(res, {
+								const jobItem = {
 									spec: job.spec,
 									installSpec: job.spec,
 									title: job.packageName || job.spec,
-								});
+								};
+								openBuildPrompt(res, jobItem);
+								openRiskPrompt(res, jobItem);
 							}
 						} catch (e) {
 							if (cancelled) return;
@@ -1365,11 +1403,13 @@ window.__ModuleLoader__.load({
 								detail: errText,
 							});
 							setError(errText);
-							openRiskPrompt(installed, {
+							const resolveItem = {
 								spec: res.spec,
 								installSpec: res.spec,
 								title: (res.inspection && res.inspection.name) || res.spec,
-							});
+							};
+							openBuildPrompt(installed, resolveItem);
+							openRiskPrompt(installed, resolveItem);
 						}
 					} else {
 						setResults([]);
@@ -1383,10 +1423,14 @@ window.__ModuleLoader__.load({
 				}
 			};
 
-			const onInstall = async (item) => {
+			const onInstall = async (item, installOpts) => {
 				const spec = item.installSpec || item.spec;
+				const approvedBuilds = Array.isArray(installOpts && installOpts.approvedBuilds)
+					? installOpts.approvedBuilds.filter(Boolean)
+					: [];
 				const current = resolveItemStatus(item, installedNames, jobs);
-				if (!spec || current.status === "installed" || current.status === "installing") return;
+				if (!spec || current.status === "installed") return;
+				if (current.status === "installing" && !approvedBuilds.length) return;
 				const requestId = newRequestId();
 				upsertJob(requestId, {
 					status: "installing",
@@ -1399,7 +1443,10 @@ window.__ModuleLoader__.load({
 				setMessage("");
 				setError("");
 				try {
-					const res = await api.install(spec, { requestId });
+					const res = await api.install(spec, {
+						requestId,
+						...(approvedBuilds.length ? { approvedBuilds } : {}),
+					});
 					if (res && res.alreadyInstalled) {
 						finishJob(requestId, {
 							status: "installed",
@@ -1426,6 +1473,7 @@ window.__ModuleLoader__.load({
 							detail: errText,
 						});
 						setError(errText);
+						openBuildPrompt(res, item);
 						openRiskPrompt(res, item);
 					}
 				} catch (e) {
@@ -1473,6 +1521,29 @@ window.__ModuleLoader__.load({
 					setError((e && e.message) || String(e));
 				} finally {
 					setRiskBusy(false);
+				}
+			};
+
+			const confirmBuildInstall = async () => {
+				if (!buildPrompt || !buildAck || !api) return;
+				const pending = Array.isArray(buildPrompt.pendingBuilds) ? buildPrompt.pendingBuilds.filter(Boolean) : [];
+				if (!pending.length) return;
+				setBuildBusy(true);
+				setMessage("");
+				try {
+					const item = buildPrompt.item || {
+						spec: buildPrompt.spec,
+						installSpec: buildPrompt.spec,
+						title: buildPrompt.spec,
+					};
+					setBuildOpen(false);
+					setBuildAck(false);
+					setError("");
+					await onInstall(item, { approvedBuilds: pending });
+				} catch (e) {
+					setError((e && e.message) || String(e));
+				} finally {
+					setBuildBusy(false);
 				}
 			};
 
@@ -1959,6 +2030,78 @@ window.__ModuleLoader__.load({
 						: null,
 				),
 				),
+				buildOpen && buildPrompt
+					? h(
+							"div",
+							{
+								style: styles.riskOverlay,
+								onClick: (e) => {
+									if (e.target === e.currentTarget) closeBuildPrompt();
+								},
+							},
+							h(
+								"div",
+								{
+									style: styles.riskDialog,
+									role: "dialog",
+									"aria-modal": "true",
+									onClick: (e) => e.stopPropagation(),
+								},
+								h("h2", { style: styles.riskTitle }, t("buildTitle")),
+								h(
+									"p",
+									{ style: styles.riskDesc },
+									format(t("buildDesc"), { spec: buildPrompt.spec || "" }),
+								),
+								h(
+									"div",
+									{ style: styles.riskAltBox },
+									h(
+										"div",
+										{ style: styles.riskAltList },
+										...(Array.isArray(buildPrompt.pendingBuilds) ? buildPrompt.pendingBuilds : []).map(
+											(name) =>
+												h("div", { key: name, style: styles.riskAltSpec }, name),
+										),
+									),
+								),
+								h(
+									"label",
+									{ style: styles.riskAckRow },
+									h("input", {
+										type: "checkbox",
+										checked: buildAck,
+										disabled: buildBusy,
+										onChange: (e) => setBuildAck(!!e.target.checked),
+									}),
+									h("span", null, t("buildAck")),
+								),
+								h(
+									"div",
+									{ style: styles.riskFooter },
+									h(
+										Btn,
+										{
+											size: "sm",
+											variant: "outline",
+											disabled: buildBusy,
+											onClick: closeBuildPrompt,
+										},
+										t("buildCancel"),
+									),
+									h(
+										Btn,
+										{
+											size: "sm",
+											disabled: buildBusy || !buildAck,
+											onClick: () => void confirmBuildInstall(),
+										},
+										buildBusy ? t("buildWorking") : t("buildConfirm"),
+									),
+								),
+							),
+						)
+					: null,
 				riskOpen && riskPrompt
 					? h(
 							"div",
@@ -2324,6 +2467,8 @@ window.__ModuleLoader__.load({
 							code: value && value.code,
 							incompatible: value && value.incompatible,
 							needsRiskExemption: !!(value && value.needsRiskExemption),
+							pendingBuilds: value && value.pendingBuilds,
+							needsBuildApproval: !!(value && value.needsBuildApproval),
 							recommendations: value && value.recommendations,
 							installSpec: (value && value.installSpec) || spec,
 						};
@@ -2368,6 +2513,8 @@ window.__ModuleLoader__.load({
 							code: value && value.code,
 							incompatible: value && value.incompatible,
 							needsRiskExemption: !!(value && value.needsRiskExemption),
+							pendingBuilds: value && value.pendingBuilds,
+							needsBuildApproval: !!(value && value.needsBuildApproval),
 							recommendations: value && value.recommendations,
 							installSpec: value && value.installSpec,
 							packageName: value && value.packageName,

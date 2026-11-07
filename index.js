@@ -501,6 +501,28 @@ function extractIncompatibility(result) {
 	};
 }
 
+/** pnpm 11 拦截依赖安装脚本时，失败结果带 pendingBuilds；需用户确认后经 approvedBuilds 重试。 */
+function extractBuildBlock(result) {
+	const pendingBuilds = Array.isArray(result?.pendingBuilds)
+		? [...new Set(result.pendingBuilds.map((name) => String(name || "").trim()).filter(Boolean))]
+		: [];
+	const kind = result?.packageResult?.kind || null;
+	const code = result?.error?.code || null;
+	const blocked =
+		kind === "build-blocked" ||
+		code === "build-blocked" ||
+		/ERR_PNPM_IGNORED_BUILDS|Ignored build scripts/i.test(String(result?.packageResult?.output || ""));
+	return {
+		pendingBuilds,
+		needsBuildApproval: blocked && pendingBuilds.length > 0,
+	};
+}
+
+function normalizeApprovedBuilds(value) {
+	if (!Array.isArray(value)) return [];
+	return [...new Set(value.map((name) => String(name || "").trim()).filter(Boolean))];
+}
+
 /** 安装失败时从精选目录推荐相近/同标签插件，优先给出可替代的当前生态包。 */
 function buildFailureRecommendations(catalog, failedSpec, limit = 4) {
 	const failed = String(failedSpec || "").trim();
@@ -1269,10 +1291,12 @@ class PluginDiscoveryService extends TypertRemoteService {
 			}
 			return `${text}。可改试精选目录中的相近插件：${alts.join("、")}`;
 		};
+		const approvedBuilds = normalizeApprovedBuilds(opts.approvedBuilds);
 		try {
 			const result = await this.ctx.pluginManager.installBundle(trimmed, {
 				requestId,
 				enabled: true,
+				...(approvedBuilds.length ? { approvedBuilds } : {}),
 			});
 			const packageName = result?.bundle || pre.name || trimmed;
 			const application = result?.application;
@@ -1281,6 +1305,7 @@ class PluginDiscoveryService extends TypertRemoteService {
 				? formatChangeFailure(result, application || "failed")
 				: `「${packageName}」安装完成（${application || "applied"} / ${result?.stage || "install"}）`;
 			const incompat = failed ? extractIncompatibility(result) : {};
+			const buildBlock = failed ? extractBuildBlock(result) : {};
 			const recommendations =
 				failed && (incompat.needsRiskExemption || incompat.code === "incompatible-version")
 					? buildFailureRecommendations(this.getCatalog(), trimmed, 4)
@@ -1299,9 +1324,15 @@ class PluginDiscoveryService extends TypertRemoteService {
 				message,
 				detail: failed ? rawMessage : undefined,
 				logPath: failed ? result?.packageResult?.logPath : undefined,
-				code: incompat.code || undefined,
+				code:
+					incompat.code ||
+					(buildBlock.needsBuildApproval ? "build-blocked" : undefined) ||
+					undefined,
 				incompatible: incompat.incompatible || undefined,
 				needsRiskExemption: incompat.needsRiskExemption === true,
+				pendingBuilds: buildBlock.pendingBuilds || undefined,
+				needsBuildApproval: buildBlock.needsBuildApproval === true,
+				approvedBuilds: approvedBuilds.length ? approvedBuilds : result?.approvedBuilds,
 				recommendations,
 				installSpec: trimmed,
 				result,
@@ -1371,6 +1402,7 @@ class PluginDiscoveryService extends TypertRemoteService {
 			const failed = settled.application === "failed" || settled.application === "cancelled";
 			const failText = failed ? formatChangeFailure(settled, settled.application) : "";
 			const incompat = failed ? extractIncompatibility(settled) : {};
+			const buildBlock = failed ? extractBuildBlock(settled) : {};
 			const failedSpec =
 				(Array.isArray(incompat.incompatible) && incompat.incompatible[0]
 					? `${incompat.incompatible[0].name}@${incompat.incompatible[0].version}`
@@ -1395,9 +1427,14 @@ class PluginDiscoveryService extends TypertRemoteService {
 				message,
 				detail: failed ? failText : undefined,
 				logPath: failed ? settled?.packageResult?.logPath : undefined,
-				code: incompat.code || undefined,
+				code:
+					incompat.code ||
+					(buildBlock.needsBuildApproval ? "build-blocked" : undefined) ||
+					undefined,
 				incompatible: incompat.incompatible || undefined,
 				needsRiskExemption: incompat.needsRiskExemption === true,
+				pendingBuilds: buildBlock.pendingBuilds || undefined,
+				needsBuildApproval: buildBlock.needsBuildApproval === true,
 				recommendations,
 				installSpec: failedSpec || undefined,
 			};

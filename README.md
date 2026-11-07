@@ -52,7 +52,7 @@ github:hjhcos/dsh-plugin-discovery
 
 详见 [`CHANGELOG.md`](./CHANGELOG.md)。每次发版会同步推送 GitHub / Gitee 并发布 npm。
 
-当前：**1.2.4** — 修复风险豁免 Typert 签名；版本不兼容时推荐相近/兼容插件。
+当前：**1.2.5** — 构建脚本拦截时可在面板内确认批准并重试；版本不兼容时推荐相近插件。
 
 ## 功能
 
@@ -62,6 +62,7 @@ github:hjhcos/dsh-plugin-discovery
 - **远程目录更新**：优先 Gitee raw JSON，失败再试 GitHub；按 `version` 写入 `$DSH_HOME/cache/...`
 - **插件自更新**：启动/打开面板时检查 npm 最新版（Gitee `package.json` 兜底）；有新版本可自动或一键更新
 - **不兼容引导**：安装 peer 不匹配时展示真实错误、复制、风险豁免重试，并推荐精选替代包
+- **构建脚本批准**：pnpm 拦截依赖 install 脚本（如 `ssh2`）时，可在面板确认后代为批准并重试
 - 关键词搜索（全部 / npm / GitHub）与链接解析安装
 - 安装三态：未安装 / 安装中 / 已安装
 - 中英文界面
