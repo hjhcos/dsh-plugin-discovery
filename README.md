@@ -48,6 +48,12 @@ github:hjhcos/dsh-plugin-discovery
 
 > 社区插件非 DeepSeek 官方维护，安装前请自行审阅仓库与权限。本插件会访问 npm / GitHub / Gitee 以搜索与刷新推荐目录。
 
+## 版本说明
+
+详见 [`CHANGELOG.md`](./CHANGELOG.md)。每次发版会同步推送 GitHub / Gitee 并发布 npm。
+
+当前：**1.2.4** — 修复风险豁免 Typert 签名；版本不兼容时推荐相近/兼容插件。
+
 ## 功能
 
 - **新手必装**：市场、中英对话语言、搜索、费用、上下文、Skills、回退、原生文件工具等
@@ -55,6 +61,7 @@ github:hjhcos/dsh-plugin-discovery
 - **分类浏览**：桌宠 / 主题 / IM / 记忆 / 效率 / 多媒体 / 远程 / 市场 / 多智能体
 - **远程目录更新**：优先 Gitee raw JSON，失败再试 GitHub；按 `version` 写入 `$DSH_HOME/cache/...`
 - **插件自更新**：启动/打开面板时检查 npm 最新版（Gitee `package.json` 兜底）；有新版本可自动或一键更新
+- **不兼容引导**：安装 peer 不匹配时展示真实错误、复制、风险豁免重试，并推荐精选替代包
 - 关键词搜索（全部 / npm / GitHub）与链接解析安装
 - 安装三态：未安装 / 安装中 / 已安装
 - 中英文界面

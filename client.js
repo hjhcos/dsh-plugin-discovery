@@ -49,6 +49,20 @@ window.__ModuleLoader__.load({
 			installLog: "安装输出：{text}",
 			installFailed: "安装失败",
 			retry: "重试",
+			copy: "复制",
+			copied: "已复制",
+			copyFailed: "复制失败",
+			riskInstall: "承担风险安装",
+			riskTitle: "版本不兼容，确认风险后安装？",
+			riskDesc:
+				"插件 {package} 与当前 DSH {runtime} 声明的 peer 不匹配。强行安装可能导致崩溃或数据丢失。仅在你明确愿意承担该风险时继续。",
+			riskAck: "我已了解风险，仍要为这对精确版本授予豁免并重试安装",
+			riskCancel: "取消",
+			riskConfirm: "确认豁免并安装",
+			riskWorking: "正在授权并重试…",
+			riskAltTitle: "推荐改用兼容插件",
+			riskAltDesc: "以下精选包更可能匹配当前 DSH 版本，可直接安装代替强行豁免：",
+			riskAltInstall: "安装推荐",
 			browseRecommend: "为你推荐",
 			browseCategory: "分类浏览",
 			browseSearch: "在线搜索",
@@ -129,6 +143,20 @@ window.__ModuleLoader__.load({
 			installLog: "Output: {text}",
 			installFailed: "Install failed",
 			retry: "Retry",
+			copy: "Copy",
+			copied: "Copied",
+			copyFailed: "Copy failed",
+			riskInstall: "Install anyway",
+			riskTitle: "Incompatible version — install at your own risk?",
+			riskDesc:
+				"Plugin {package} does not match peers for DSH {runtime}. Forcing install may crash or lose data. Continue only if you accept that risk.",
+			riskAck: "I understand the risk and grant an exact-version exemption for this pair",
+			riskCancel: "Cancel",
+			riskConfirm: "Grant exemption and install",
+			riskWorking: "Granting and retrying…",
+			riskAltTitle: "Try a compatible plugin instead",
+			riskAltDesc: "These curated packages are more likely to match this DSH version:",
+			riskAltInstall: "Install recommended",
 			browseRecommend: "For you",
 			browseCategory: "Categories",
 			browseSearch: "Online search",
@@ -593,7 +621,7 @@ window.__ModuleLoader__.load({
 			},
 			errorBox: {
 				display: "flex",
-				alignItems: "center",
+				alignItems: "flex-start",
 				justifyContent: "space-between",
 				gap: "12px",
 				padding: "12px 14px",
@@ -602,6 +630,115 @@ window.__ModuleLoader__.load({
 				background: "var(--dsw-alias-settings-card-fill, #ffffff)",
 				color: "var(--dsw-alias-state-warn-primary, var(--dsw-alias-label-secondary))",
 				fontSize: "13px",
+				lineHeight: "20px",
+			},
+			errorText: {
+				flex: 1,
+				minWidth: 0,
+				whiteSpace: "pre-wrap",
+				wordBreak: "break-word",
+				overflowWrap: "anywhere",
+			},
+			errorActions: {
+				display: "flex",
+				alignItems: "center",
+				gap: "8px",
+				flexShrink: 0,
+				flexWrap: "wrap",
+				justifyContent: "flex-end",
+			},
+			riskOverlay: {
+				position: "fixed",
+				inset: 0,
+				zIndex: 10000,
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				padding: "24px",
+				background: "rgba(15, 23, 42, 0.45)",
+			},
+			riskDialog: {
+				width: "min(520px, 100%)",
+				maxHeight: "90vh",
+				overflow: "auto",
+				borderRadius: "var(--dsw-radius-md, 12px)",
+				border: "1px solid var(--dsw-alias-border-l2, #d0d5dd)",
+				background: "var(--dsw-alias-settings-card-fill, #ffffff)",
+				color: "var(--dsw-alias-label-primary)",
+				padding: "20px",
+				boxShadow: "0 16px 40px rgba(15, 23, 42, 0.18)",
+			},
+			riskTitle: {
+				margin: "0 0 10px",
+				fontSize: "16px",
+				fontWeight: 600,
+				lineHeight: "24px",
+			},
+			riskDesc: {
+				margin: "0 0 14px",
+				fontSize: "13px",
+				lineHeight: "20px",
+				color: "var(--dsw-alias-label-secondary)",
+				whiteSpace: "pre-wrap",
+			},
+			riskAckRow: {
+				display: "flex",
+				alignItems: "flex-start",
+				gap: "10px",
+				margin: "0 0 16px",
+				fontSize: "13px",
+				lineHeight: "20px",
+			},
+			riskAltBox: {
+				margin: "0 0 16px",
+				padding: "12px",
+				borderRadius: "var(--dsw-radius-sm, 8px)",
+				border: "1px solid var(--dsw-alias-border-l2, #d0d5dd)",
+				background: "var(--dsw-alias-settings-card-fill-secondary, #f8fafc)",
+			},
+			riskAltTitle: {
+				margin: "0 0 6px",
+				fontSize: "13px",
+				fontWeight: 600,
+				lineHeight: "20px",
+			},
+			riskAltDesc: {
+				margin: "0 0 10px",
+				fontSize: "12px",
+				lineHeight: "18px",
+				color: "var(--dsw-alias-label-secondary)",
+			},
+			riskAltList: {
+				display: "flex",
+				flexDirection: "column",
+				gap: "8px",
+			},
+			riskAltRow: {
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "space-between",
+				gap: "10px",
+			},
+			riskAltMeta: {
+				minWidth: 0,
+				flex: 1,
+			},
+			riskAltSpec: {
+				fontSize: "13px",
+				fontWeight: 500,
+				lineHeight: "18px",
+				wordBreak: "break-all",
+			},
+			riskAltHint: {
+				fontSize: "12px",
+				lineHeight: "16px",
+				color: "var(--dsw-alias-label-secondary)",
+			},
+			riskFooter: {
+				display: "flex",
+				justifyContent: "flex-end",
+				gap: "8px",
+				flexWrap: "wrap",
 			},
 			updateBox: {
 				display: "flex",
@@ -751,10 +888,23 @@ window.__ModuleLoader__.load({
 				const err = result.error;
 				return {
 					ok: false,
-					message: (err && (err.message || err.code)) || fallbackMessage,
+					message: (err && (err.message || err.diagnostic || err.code)) || fallbackMessage,
 				};
 			}
 			return result.value;
+		}
+
+		function pickInstallError(res, fallback, lastDetail) {
+			const primary = String((res && (res.detail || res.message)) || "").trim();
+			const weak =
+				!primary ||
+				/^install failed$/i.test(primary) ||
+				/^安装失败([（(]failed[）)])?$/i.test(primary);
+			if (!weak) return primary;
+			const extra = String(lastDetail || "").trim();
+			const title = fallback || "安装失败";
+			if (extra && extra !== primary) return `${title}\n${extra}`;
+			return primary || title;
 		}
 
 		function Panel(props) {
@@ -775,6 +925,11 @@ window.__ModuleLoader__.load({
 			const [results, setResults] = React.useState([]);
 			const [message, setMessage] = React.useState("");
 			const [error, setError] = React.useState("");
+			const [copyHint, setCopyHint] = React.useState("");
+			const [riskPrompt, setRiskPrompt] = React.useState(null);
+			const [riskOpen, setRiskOpen] = React.useState(false);
+			const [riskAck, setRiskAck] = React.useState(false);
+			const [riskBusy, setRiskBusy] = React.useState(false);
 			const [busy, setBusy] = React.useState(false);
 			const [resolveInput, setResolveInput] = React.useState("");
 			const [installDetail, setInstallDetail] = React.useState("");
@@ -783,6 +938,7 @@ window.__ModuleLoader__.load({
 			const [page, setPage] = React.useState(1);
 			const jobsRef = React.useRef(jobs);
 			const installedNamesRef = React.useRef(installedNames);
+			const installDetailRef = React.useRef("");
 			React.useEffect(() => {
 				jobsRef.current = jobs;
 				writeJobCache(jobs);
@@ -790,6 +946,37 @@ window.__ModuleLoader__.load({
 			React.useEffect(() => {
 				installedNamesRef.current = installedNames;
 			}, [installedNames]);
+			React.useEffect(() => {
+				installDetailRef.current = installDetail;
+			}, [installDetail]);
+			React.useEffect(() => {
+				setCopyHint("");
+			}, [error]);
+
+			const openRiskPrompt = React.useCallback((res, item) => {
+				const rows = Array.isArray(res && res.incompatible) ? res.incompatible : [];
+				const first = rows[0];
+				if (!(res && res.needsRiskExemption) || !first) return;
+				const packageVersion = `${first.name}@${first.version}`;
+				const runtimeVersion = first.runtimeVersion || "unknown";
+				const recommendations = Array.isArray(res && res.recommendations) ? res.recommendations : [];
+				setRiskAck(false);
+				setRiskPrompt({
+					spec: (res && res.installSpec) || (item && (item.installSpec || item.spec)) || first.name,
+					item: item || null,
+					packageVersion,
+					runtimeVersion,
+					incompatible: rows,
+					recommendations,
+				});
+				setRiskOpen(true);
+			}, []);
+
+			const closeRiskPrompt = React.useCallback(() => {
+				if (riskBusy) return;
+				setRiskOpen(false);
+				setRiskAck(false);
+			}, [riskBusy]);
 
 			const refreshInstalled = React.useCallback(async () => {
 				if (!api || typeof api.listInstalled !== "function") return;
@@ -1045,18 +1232,36 @@ window.__ModuleLoader__.load({
 								setMessage(res.message || t("installed"));
 								await refreshInstalled();
 							} else {
+								const lastDetail =
+									(jobsRef.current[job.requestId] && jobsRef.current[job.requestId].detail) ||
+									installDetailRef.current;
+								const errText = pickInstallError(res, t("installFailed"), lastDetail);
 								finishJob(job.requestId, {
 									status: "failed",
-									detail: (res && res.message) || t("installFailed"),
+									detail: errText,
 								});
-								setError((res && res.message) || t("installFailed"));
+								setError(errText);
+								openRiskPrompt(res, {
+									spec: job.spec,
+									installSpec: job.spec,
+									title: job.packageName || job.spec,
+								});
 							}
 						} catch (e) {
 							if (cancelled) return;
+							const lastDetail =
+								(jobsRef.current[job.requestId] && jobsRef.current[job.requestId].detail) ||
+								installDetailRef.current;
+							const errText = pickInstallError(
+								{ message: (e && e.message) || String(e) },
+								t("installFailed"),
+								lastDetail,
+							);
 							finishJob(job.requestId, {
 								status: "failed",
-								detail: (e && e.message) || String(e),
+								detail: errText,
 							});
+							setError(errText);
 						} finally {
 							if (!cancelled) setInstallDetail("");
 						}
@@ -1151,11 +1356,20 @@ window.__ModuleLoader__.load({
 							setMessage(installed.message || t("installed"));
 							await refreshInstalled();
 						} else {
+							const lastDetail =
+								(jobsRef.current[requestId] && jobsRef.current[requestId].detail) ||
+								installDetailRef.current;
+							const errText = pickInstallError(installed, t("installFailed"), lastDetail);
 							finishJob(requestId, {
 								status: "failed",
-								detail: (installed && installed.message) || t("inspectFailed"),
+								detail: errText,
 							});
-							setError((installed && installed.message) || t("inspectFailed"));
+							setError(errText);
+							openRiskPrompt(installed, {
+								spec: res.spec,
+								installSpec: res.spec,
+								title: (res.inspection && res.inspection.name) || res.spec,
+							});
 						}
 					} else {
 						setResults([]);
@@ -1204,21 +1418,77 @@ window.__ModuleLoader__.load({
 						await refreshInstalled();
 						setMessage(res.message || t("installed"));
 					} else {
+						const lastDetail =
+							(jobsRef.current[requestId] && jobsRef.current[requestId].detail) || installDetailRef.current;
+						const errText = pickInstallError(res, t("installFailed"), lastDetail);
 						finishJob(requestId, {
 							status: "failed",
-							detail: (res && res.message) || t("installFailed"),
+							detail: errText,
 						});
-						setError((res && res.message) || t("installFailed"));
+						setError(errText);
+						openRiskPrompt(res, item);
 					}
 				} catch (e) {
+					const lastDetail =
+						(jobsRef.current[requestId] && jobsRef.current[requestId].detail) || installDetailRef.current;
+					const errText = pickInstallError(
+						{ message: (e && e.message) || String(e) },
+						t("installFailed"),
+						lastDetail,
+					);
 					finishJob(requestId, {
 						status: "failed",
-						detail: (e && e.message) || String(e),
+						detail: errText,
 					});
-					setError((e && e.message) || String(e));
+					setError(errText);
 				} finally {
 					setInstallDetail("");
 				}
+			};
+
+			const confirmRiskInstall = async () => {
+				if (!riskPrompt || !riskAck || !api || typeof api.grantVersionExemption !== "function") return;
+				setRiskBusy(true);
+				setMessage("");
+				try {
+					const granted = await api.grantVersionExemption(
+						riskPrompt.packageVersion,
+						riskPrompt.runtimeVersion,
+						true,
+					);
+					if (!granted || !granted.ok) {
+						setError((granted && granted.message) || t("installFailed"));
+						return;
+					}
+					const item = riskPrompt.item || {
+						spec: riskPrompt.spec,
+						installSpec: riskPrompt.spec,
+						title: riskPrompt.packageVersion,
+					};
+					setRiskOpen(false);
+					setRiskAck(false);
+					setError("");
+					await onInstall(item);
+				} catch (e) {
+					setError((e && e.message) || String(e));
+				} finally {
+					setRiskBusy(false);
+				}
+			};
+
+			const installRecommendedAlt = async (alt) => {
+				if (!alt || riskBusy) return;
+				const item = {
+					spec: alt.installSpec || alt.spec,
+					installSpec: alt.installSpec || alt.spec,
+					title: alt.title || alt.spec,
+					source: alt.source || "catalog",
+					catalogId: alt.catalogId,
+				};
+				setRiskOpen(false);
+				setRiskAck(false);
+				setError("");
+				await onInstall(item);
 			};
 
 			const sourceOptions = [
@@ -1334,6 +1604,9 @@ window.__ModuleLoader__.load({
 						: t("selfUpdateOriginNpm");
 
 			return h(
+				React.Fragment,
+				null,
+				h(
 				"div",
 				{ style: styles.page },
 				h(
@@ -1501,16 +1774,67 @@ window.__ModuleLoader__.load({
 						? h(
 								"div",
 								{ style: styles.errorBox },
-								h("span", null, error),
+								h("div", { style: styles.errorText }, error),
 								h(
-									Btn,
-									{
-										size: "sm",
-										variant: "outline",
-										disabled: busy,
-										onClick: onSearch,
-									},
-									t("retry"),
+									"div",
+									{ style: styles.errorActions },
+									h(
+										Btn,
+										{
+											size: "sm",
+											variant: "outline",
+											disabled: busy || riskBusy,
+											onClick: async () => {
+												const text = String(error || "");
+												try {
+													if (navigator.clipboard && navigator.clipboard.writeText) {
+														await navigator.clipboard.writeText(text);
+													} else {
+														const ta = document.createElement("textarea");
+														ta.value = text;
+														ta.setAttribute("readonly", "");
+														ta.style.position = "fixed";
+														ta.style.left = "-9999px";
+														document.body.appendChild(ta);
+														ta.select();
+														document.execCommand("copy");
+														document.body.removeChild(ta);
+													}
+													setCopyHint(t("copied"));
+													window.setTimeout(() => setCopyHint(""), 1600);
+												} catch {
+													setCopyHint(t("copyFailed"));
+													window.setTimeout(() => setCopyHint(""), 1600);
+												}
+											},
+										},
+										copyHint || t("copy"),
+									),
+									riskPrompt
+										? h(
+												Btn,
+												{
+													size: "sm",
+													variant: "outline",
+													disabled: busy || riskBusy,
+													onClick: () => {
+														setRiskAck(false);
+														setRiskOpen(true);
+													},
+												},
+												t("riskInstall"),
+											)
+										: null,
+									h(
+										Btn,
+										{
+											size: "sm",
+											variant: "outline",
+											disabled: busy || riskBusy,
+											onClick: onSearch,
+										},
+										t("retry"),
+									),
 								),
 							)
 						: null,
@@ -1634,6 +1958,110 @@ window.__ModuleLoader__.load({
 							)
 						: null,
 				),
+				),
+				riskOpen && riskPrompt
+					? h(
+							"div",
+							{
+								style: styles.riskOverlay,
+								onClick: (e) => {
+									if (e.target === e.currentTarget) closeRiskPrompt();
+								},
+							},
+							h(
+								"div",
+								{
+									style: styles.riskDialog,
+									role: "dialog",
+									"aria-modal": "true",
+									onClick: (e) => e.stopPropagation(),
+								},
+								h("h2", { style: styles.riskTitle }, t("riskTitle")),
+								h(
+									"p",
+									{ style: styles.riskDesc },
+									format(t("riskDesc"), {
+										package: riskPrompt.packageVersion,
+										runtime: riskPrompt.runtimeVersion,
+									}),
+								),
+								Array.isArray(riskPrompt.recommendations) && riskPrompt.recommendations.length
+									? h(
+											"div",
+											{ style: styles.riskAltBox },
+											h("div", { style: styles.riskAltTitle }, t("riskAltTitle")),
+											h("p", { style: styles.riskAltDesc }, t("riskAltDesc")),
+											h(
+												"div",
+												{ style: styles.riskAltList },
+												...riskPrompt.recommendations.map((alt) =>
+													h(
+														"div",
+														{ key: alt.spec, style: styles.riskAltRow },
+														h(
+															"div",
+															{ style: styles.riskAltMeta },
+															h("div", { style: styles.riskAltSpec }, alt.title || alt.spec),
+															h(
+																"div",
+																{ style: styles.riskAltHint },
+																alt.spec === (alt.title || "")
+																	? alt.reason || ""
+																	: alt.spec,
+															),
+														),
+														h(
+															Btn,
+															{
+																size: "sm",
+																variant: "outline",
+																disabled: riskBusy,
+																onClick: () => void installRecommendedAlt(alt),
+															},
+															t("riskAltInstall"),
+														),
+													),
+												),
+											),
+										)
+									: null,
+								h(
+									"label",
+									{ style: styles.riskAckRow },
+									h("input", {
+										type: "checkbox",
+										checked: riskAck,
+										disabled: riskBusy,
+										onChange: (e) => setRiskAck(!!e.target.checked),
+									}),
+									h("span", null, t("riskAck")),
+								),
+								h(
+									"div",
+									{ style: styles.riskFooter },
+									h(
+										Btn,
+										{
+											size: "sm",
+											variant: "outline",
+											disabled: riskBusy,
+											onClick: closeRiskPrompt,
+										},
+										t("riskCancel"),
+									),
+									h(
+										Btn,
+										{
+											size: "sm",
+											disabled: riskBusy || !riskAck,
+											onClick: () => void confirmRiskInstall(),
+										},
+										riskBusy ? t("riskWorking") : t("riskConfirm"),
+									),
+								),
+							),
+						)
+					: null,
 			);
 		}
 
@@ -1651,6 +2079,10 @@ window.__ModuleLoader__.load({
 		const SPEC_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/installPlugin:spec");
 		const INSTALL_OPTIONS_CODEC = strictJson("dsh-plugin-discovery#pluginDiscovery/installPlugin:options");
 		const INSTALL_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/installPlugin:result");
+		const GRANT_PACKAGE = strictJson("dsh-plugin-discovery#pluginDiscovery/grantVersionExemption:packageVersion");
+		const GRANT_RUNTIME = strictJson("dsh-plugin-discovery#pluginDiscovery/grantVersionExemption:runtimeVersion");
+		const GRANT_ACCEPT = strictJson("dsh-plugin-discovery#pluginDiscovery/grantVersionExemption:acceptRisk");
+		const GRANT_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/grantVersionExemption:result");
 		const LIST_INSTALLED_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/listInstalled:result");
 		const WAIT_REQUEST_ID = strictJson("dsh-plugin-discovery#pluginDiscovery/waitInstall:requestId");
 		const WAIT_RESULT = strictJson("dsh-plugin-discovery#pluginDiscovery/waitInstall:result");
@@ -1753,6 +2185,19 @@ window.__ModuleLoader__.load({
 						},
 					],
 					result: INSTALL_RESULT,
+				},
+				{
+					id: "dsh-plugin-discovery#pluginDiscovery/grantVersionExemption",
+					service: "pluginDiscovery",
+					namespace: "pluginDiscovery",
+					method: "grantVersionExemption",
+					invocation: { kind: "direct" },
+					parameters: [
+						{ name: "packageVersion", wire: "packageVersion", source: "json", codec: GRANT_PACKAGE },
+						{ name: "runtimeVersion", wire: "runtimeVersion", source: "json", codec: GRANT_RUNTIME },
+						{ name: "acceptRisk", wire: "acceptRisk", source: "json", codec: GRANT_ACCEPT },
+					],
+					result: GRANT_RESULT,
 				},
 				{
 					id: "dsh-plugin-discovery#pluginDiscovery/listInstalled",
@@ -1875,8 +2320,25 @@ window.__ModuleLoader__.load({
 							packageName: value && value.packageName,
 							requestId: value && value.requestId,
 							message: value && value.message,
+							detail: value && value.detail,
+							code: value && value.code,
+							incompatible: value && value.incompatible,
+							needsRiskExemption: !!(value && value.needsRiskExemption),
+							recommendations: value && value.recommendations,
+							installSpec: (value && value.installSpec) || spec,
 						};
 					}
+					return value;
+				},
+				grantVersionExemption: async (packageVersion, runtimeVersion, acceptRisk) => {
+					if (mountError) return { ok: false, message: mountError };
+					const remote = remoteNs();
+					if (!remote || typeof remote.grantVersionExemption !== "function") {
+						return { ok: false, message: "remote.pluginDiscovery.grantVersionExemption unavailable" };
+					}
+					const wire = await remote.grantVersionExemption(packageVersion, runtimeVersion, acceptRisk);
+					const value = unwrapRemote(wire, "grantVersionExemption failed");
+					if (wire && wire.ok === false) return { ok: false, message: value.message };
 					return value;
 				},
 				listInstalled: async () => {
@@ -1898,7 +2360,20 @@ window.__ModuleLoader__.load({
 					}
 					const wire = await remote.waitInstall(requestId);
 					const value = unwrapRemote(wire, "waitInstall failed");
-					if (wire && wire.ok === false) return { ok: false, message: value.message || "waitInstall failed" };
+					if (wire && wire.ok === false) {
+						return {
+							ok: false,
+							message: (value && value.message) || "waitInstall failed",
+							detail: value && value.detail,
+							code: value && value.code,
+							incompatible: value && value.incompatible,
+							needsRiskExemption: !!(value && value.needsRiskExemption),
+							recommendations: value && value.recommendations,
+							installSpec: value && value.installSpec,
+							packageName: value && value.packageName,
+							pending: !!(value && value.pending),
+						};
+					}
 					return value;
 				},
 				subscribePluginChanged: (listener) => {

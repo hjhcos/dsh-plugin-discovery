@@ -425,6 +425,135 @@ function suggestCatalogAlternatives(catalog, failedSpec, limit = 3) {
 	return uniq;
 }
 
+/** ManagementError 没有 message 字段，只有 code / diagnostic；再拼上 packageResult 输出尾部。 */
+function formatChangeFailure(result, fallbackApplication = "failed") {
+	const parts = [];
+	const err = result?.error;
+	if (err && typeof err === "object") {
+		if (err.diagnostic) parts.push(String(err.diagnostic).trim());
+		if (err.code) parts.push(`错误码：${err.code}`);
+		if (Array.isArray(err.incompatible) && err.incompatible.length) {
+			const names = err.incompatible
+				.map((row) => `${row?.name || "?"}@${row?.version || "?"}`)
+				.filter(Boolean);
+			if (names.length) parts.push(`不兼容：${names.join("、")}`);
+		}
+	} else if (typeof err === "string" && err.trim()) {
+		parts.push(err.trim());
+	} else if (err?.message) {
+		parts.push(String(err.message).trim());
+	}
+
+	const pkg = result?.packageResult;
+	if (pkg && typeof pkg === "object") {
+		if (pkg.kind) parts.push(`失败类型：${pkg.kind}`);
+		if (pkg.timedOut) parts.push("安装超时（长时间无输出）");
+		if (typeof pkg.exitCode === "number") parts.push(`退出码：${pkg.exitCode}`);
+		const output = String(pkg.output || "").trim();
+		if (output) {
+			const lines = output
+				.split(/\r?\n/)
+				.map((line) => line.trim())
+				.filter(Boolean);
+			const tail = lines.slice(-8).join("\n");
+			if (tail) parts.push(tail);
+		}
+		if (pkg.logPath) parts.push(`完整日志：${pkg.logPath}`);
+	}
+
+	if (result?.failedAt) parts.push(`失败位置：${result.failedAt}`);
+	if (Array.isArray(result?.pendingBuilds) && result.pendingBuilds.length) {
+		parts.push(`待批准构建脚本：${result.pendingBuilds.join("、")}`);
+	}
+	if (Array.isArray(result?.warnings) && result.warnings.length) {
+		parts.push(`警告：${result.warnings.slice(0, 3).join("；")}`);
+	}
+
+	const unique = [];
+	const seen = new Set();
+	for (const part of parts) {
+		const text = String(part || "").trim();
+		if (!text || seen.has(text)) continue;
+		seen.add(text);
+		unique.push(text);
+	}
+	if (unique.length) return unique.join("\n");
+	const application = result?.application || fallbackApplication;
+	return `安装失败（${application}）。插件管理器未返回 diagnostic / 安装日志。`;
+}
+
+function extractIncompatibility(result) {
+	const code = result?.error?.code || null;
+	const incompatible = Array.isArray(result?.error?.incompatible)
+		? result.error.incompatible
+				.map((row) => ({
+					name: String(row?.name || "").trim(),
+					version: String(row?.version || "").trim(),
+					runtimeVersion: String(row?.runtimeVersion || "").trim(),
+					peers: row?.peers && typeof row.peers === "object" ? row.peers : {},
+				}))
+				.filter((row) => row.name && row.version)
+		: [];
+	return {
+		code,
+		incompatible,
+		needsRiskExemption: code === "incompatible-version" && incompatible.length > 0,
+	};
+}
+
+/** 安装失败时从精选目录推荐相近/同标签插件，优先给出可替代的当前生态包。 */
+function buildFailureRecommendations(catalog, failedSpec, limit = 4) {
+	const failed = String(failedSpec || "").trim();
+	const seen = new Set([failed.toLowerCase()]);
+	const out = [];
+	const pushRow = (row, reason) => {
+		const spec = String(row?.spec || "").trim();
+		if (!spec || seen.has(spec.toLowerCase())) return;
+		seen.add(spec.toLowerCase());
+		out.push({
+			spec,
+			title: row.title || spec,
+			description: row.description || "",
+			source: "catalog",
+			installSpec: spec,
+			catalogId: row.id || row.spec,
+			reason: reason || "similar",
+			featured: row.featured === true,
+			rank: typeof row.rank === "number" ? row.rank : 0,
+		});
+	};
+
+	const plugins = Array.isArray(catalog?.plugins) ? catalog.plugins : [];
+	const failedRow = plugins.find((row) => String(row.spec || "").toLowerCase() === failed.toLowerCase());
+	if (failedRow) {
+		for (const rel of failedRow.related || []) {
+			const hit = plugins.find((row) => String(row.spec || "") === rel || String(row.id || "") === rel);
+			if (hit) pushRow(hit, "related");
+			if (out.length >= limit) return out;
+		}
+		for (const tag of failedRow.tags || []) {
+			for (const row of plugins) {
+				if ((row.tags || []).includes(tag)) pushRow(row, "tag");
+				if (out.length >= limit) return out;
+			}
+		}
+		for (const cat of failedRow.categories || []) {
+			if (cat === "featured") continue;
+			for (const row of plugins) {
+				if ((row.categories || []).includes(cat)) pushRow(row, "category");
+				if (out.length >= limit) return out;
+			}
+		}
+	}
+
+	for (const spec of suggestCatalogAlternatives(catalog, failed, limit)) {
+		const hit = plugins.find((row) => String(row.spec || "") === spec) || { spec, title: spec };
+		pushRow(hit, "similar");
+		if (out.length >= limit) break;
+	}
+	return out.slice(0, limit);
+}
+
 function mapGithubRepos(items) {
 	return (Array.isArray(items) ? items : []).map((repo) => ({
 		source: "github",
@@ -1149,8 +1278,17 @@ class PluginDiscoveryService extends TypertRemoteService {
 			const application = result?.application;
 			const failed = application === "failed" || application === "cancelled";
 			const rawMessage = failed
-				? result?.error?.message || `安装失败（${application || "unknown"}）`
+				? formatChangeFailure(result, application || "failed")
 				: `「${packageName}」安装完成（${application || "applied"} / ${result?.stage || "install"}）`;
+			const incompat = failed ? extractIncompatibility(result) : {};
+			const recommendations =
+				failed && (incompat.needsRiskExemption || incompat.code === "incompatible-version")
+					? buildFailureRecommendations(this.getCatalog(), trimmed, 4)
+					: undefined;
+			let message = failed ? withInstallHint(rawMessage) : rawMessage;
+			if (failed && recommendations && recommendations.length) {
+				message = `${message}\n推荐改试：${recommendations.map((row) => row.spec).join("、")}`;
+			}
 			return {
 				ok: !failed,
 				alreadyInstalled: false,
@@ -1158,7 +1296,14 @@ class PluginDiscoveryService extends TypertRemoteService {
 				requestId,
 				application,
 				stage: result?.stage,
-				message: failed ? withInstallHint(rawMessage) : rawMessage,
+				message,
+				detail: failed ? rawMessage : undefined,
+				logPath: failed ? result?.packageResult?.logPath : undefined,
+				code: incompat.code || undefined,
+				incompatible: incompat.incompatible || undefined,
+				needsRiskExemption: incompat.needsRiskExemption === true,
+				recommendations,
+				installSpec: trimmed,
 				result,
 			};
 		} catch (error) {
@@ -1166,6 +1311,51 @@ class PluginDiscoveryService extends TypertRemoteService {
 				ok: false,
 				requestId,
 				message: withInstallHint(error instanceof Error ? error.message : String(error)),
+				installSpec: trimmed,
+			};
+		}
+	}
+
+	/** Typert Remote：参数必须是独立形参，不能解构、不能默认值、不能 rest。 */
+	async grantVersionExemption(packageVersion, runtimeVersion, acceptRisk) {
+		if (!this.config.enabled) {
+			return { ok: false, message: "发现插件已停用" };
+		}
+		const pkg = String(packageVersion == null ? "" : packageVersion).trim();
+		const runtime = String(runtimeVersion == null ? "" : runtimeVersion).trim();
+		const accepted = acceptRisk === true;
+		if (!pkg || !runtime) {
+			return { ok: false, message: "缺少 packageVersion 或 runtimeVersion" };
+		}
+		if (!accepted) {
+			return {
+				ok: false,
+				message: "未确认风险。授予版本豁免必须 acceptRisk=true，并先明确告知可能崩溃或数据丢失。",
+			};
+		}
+		if (typeof this.ctx.pluginManager?.setVersionExemption !== "function") {
+			return { ok: false, message: "当前 DSH 不支持 setVersionExemption" };
+		}
+		try {
+			const result = await this.ctx.pluginManager.setVersionExemption(pkg, runtime, true, true);
+			const application = result?.application;
+			const failed = application === "failed" || application === "cancelled";
+			return {
+				ok: !failed,
+				packageVersion: pkg,
+				runtimeVersion: runtime,
+				application,
+				message: failed
+					? formatChangeFailure(result, application || "failed")
+					: `已为 ${pkg} 在 DSH ${runtime} 上授予精确版本豁免，可重新安装。`,
+				result,
+			};
+		} catch (error) {
+			return {
+				ok: false,
+				packageVersion: pkg,
+				runtimeVersion: runtime,
+				message: error instanceof Error ? error.message : String(error),
 			};
 		}
 	}
@@ -1179,6 +1369,22 @@ class PluginDiscoveryService extends TypertRemoteService {
 				return { ok: true, settled: null, pending: true, message: "安装仍在进行或已丢失" };
 			}
 			const failed = settled.application === "failed" || settled.application === "cancelled";
+			const failText = failed ? formatChangeFailure(settled, settled.application) : "";
+			const incompat = failed ? extractIncompatibility(settled) : {};
+			const failedSpec =
+				(Array.isArray(incompat.incompatible) && incompat.incompatible[0]
+					? `${incompat.incompatible[0].name}@${incompat.incompatible[0].version}`
+					: "") || settled.bundle || "";
+			const recommendations =
+				failed && (incompat.needsRiskExemption || incompat.code === "incompatible-version")
+					? buildFailureRecommendations(this.getCatalog(), failedSpec, 4)
+					: undefined;
+			let message = failed
+				? failText
+				: `安装完成（${settled.application} / ${settled.stage}）`;
+			if (failed && recommendations && recommendations.length) {
+				message = `${message}\n推荐改试：${recommendations.map((row) => row.spec).join("、")}`;
+			}
 			return {
 				ok: !failed,
 				settled,
@@ -1186,9 +1392,14 @@ class PluginDiscoveryService extends TypertRemoteService {
 				packageName: settled.bundle,
 				application: settled.application,
 				stage: settled.stage,
-				message: failed
-					? settled.error?.message || `安装失败（${settled.application}）`
-					: `安装完成（${settled.application} / ${settled.stage}）`,
+				message,
+				detail: failed ? failText : undefined,
+				logPath: failed ? settled?.packageResult?.logPath : undefined,
+				code: incompat.code || undefined,
+				incompatible: incompat.incompatible || undefined,
+				needsRiskExemption: incompat.needsRiskExemption === true,
+				recommendations,
+				installSpec: failedSpec || undefined,
 			};
 		} catch (error) {
 			return {
@@ -1315,6 +1526,7 @@ markRemoteMethod(PluginDiscoveryService.prototype, "checkSelfUpdate");
 markRemoteMethod(PluginDiscoveryService.prototype, "updateSelf");
 markRemoteMethod(PluginDiscoveryService.prototype, "resolve");
 markRemoteMethod(PluginDiscoveryService.prototype, "installPlugin");
+markRemoteMethod(PluginDiscoveryService.prototype, "grantVersionExemption");
 markRemoteMethod(PluginDiscoveryService.prototype, "listInstalled");
 markRemoteMethod(PluginDiscoveryService.prototype, "waitInstall");
 
