@@ -52,7 +52,7 @@ github:hjhcos/dsh-plugin-discovery
 
 详见 [`CHANGELOG.md`](./CHANGELOG.md)。每次发版会同步推送 GitHub / Gitee 并发布 npm。
 
-当前：**1.2.5** — 构建脚本拦截时可在面板内确认批准并重试；版本不兼容时推荐相近插件。
+当前：**1.2.6** — 构建脚本拦截时可在面板内确认批准并重试；版本不兼容时推荐相近插件。
 
 ## 功能
 
